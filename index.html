@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuestLog | Gamified Task Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="brand">
+            <i class="fas fa-dragon"></i>
+            <span>QuestLog</span>
+        </div>
+        <nav>
+            <div class="tab active" onclick="showContent('dashboard', this)">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </div>
+            <div class="tab" onclick="showContent('training', this)">
+                <i class="fas fa-dumbbell"></i> Training
+            </div>
+            <div class="tab" onclick="showContent('quests', this)">
+                <i class="fas fa-scroll"></i> Quests
+            </div>
+            <div class="tab" onclick="showContent('boss-fights', this)">
+                <i class="fas fa-skull-crossbones"></i> Bosses
+            </div>
+            <div class="tab" onclick="showContent('achievements', this)">
+                <i class="fas fa-trophy"></i> Achievements
+            </div>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <!-- Dashboard / Profile Page -->
+        <div class="content active" id="dashboard">
+            <header><h1>Hero Profile</h1></header>
+            
+            <div class="profile-card">
+                <div class="avatar-upload">
+                    <div class="avatar-preview">
+                        <img id="imagePreview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Hero">
+                        <div class="upload-overlay" onclick="document.getElementById('imageUpload').click();">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                    </div>
+                    <input type='file' id="imageUpload" accept=".png, .jpg, .jpeg" hidden />
+                </div>
+
+                <div class="profile-info">
+                    <div class="name-container">
+                        <h2 id="heroName" contenteditable="true" title="Click to edit name">Legendary Warrior</h2>
+                        <i class="fas fa-pen-to-square edit-icon"></i>
+                    </div>
+                    <p class="rank-text">Rank: <span id="rankTitle">Novice Adventurer</span></p>
+                    
+                    <div class="level-badge-container">
+                        <div class="level-circle">
+                            <span id="displayLevel">1</span>
+                        </div>
+                        <div class="level-progress-info">
+                            <span>Level Progress</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="stats-bar">
+                        <div class="bar-container">
+                            <span class="label">HP</span>
+                            <div class="bar"><div class="fill hp" style="width: 100%;"></div></div>
+                        </div>
+                        <div class="bar-container">
+                            <span class="label">XP</span>
+                            <div class="bar"><div class="fill xp" id="lvlBar" style="width: 0%;"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card notification-card" id="levelUpNotif">
+                <i class="fas fa-bolt"></i>
+                <span>Level Up progress increases as you complete tasks!</span>
+            </div>
+        </div>
+
+        <!-- Other sections remain similar but wired to logic -->
+        <div class="content" id="training">
+            <header><h1>Training Grounds</h1></header>
+            <div class="input-group">
+                <input type="text" id="training-input" placeholder="New drill...">
+                <button onclick="addTask('training')"><i class="fas fa-plus"></i></button>
+            </div>
+            <div id="training-list" class="task-grid"></div>
+        </div>
+
+        <div class="content" id="quests">
+            <header><h1>Quest Board</h1></header>
+            <div class="input-group">
+                <input type="text" id="quests-input" placeholder="New quest...">
+                <button onclick="addTask('quests')"><i class="fas fa-plus"></i></button>
+            </div>
+            <div id="quests-list" class="task-grid"></div>
+        </div>
+
+        <div class="content" id="boss-fights">
+            <header><h1>Bosses</h1></header>
+            <div class="input-group">
+                <input type="text" id="boss-input" placeholder="Summon Boss...">
+                <button onclick="addTask('boss')"><i class="fas fa-skull"></i></button>
+            </div>
+            <div id="boss-list" class="task-grid"></div>
+        </div>
+
+        <div class="content" id="achievements">
+            <header><h1>Hall of Fame</h1></header>
+            <div id="achievements-list" class="task-grid">
+                <div class="empty-msg">Slay bosses to earn trophies.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- State Management ---
+        let currentLevel = 1;
+        let currentXP = 0;
+        const xpPerTask = 25; // 4 tasks = 1 level up
+
+        // --- Profile Picture Logic ---
+        document.getElementById('imageUpload').addEventListener('change', function(e) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('imagePreview').src = e.target.result;
+            }
+            reader.readAsDataURL(e.target.files[0]);
+        });
+
+        // --- Leveling Logic ---
+        function gainXP() {
+            currentXP += xpPerTask;
+            
+            if (currentXP >= 100) {
+                currentLevel++;
+                currentXP = 0;
+                playLevelAnimation();
+            }
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('displayLevel').innerText = currentLevel;
+            document.getElementById('progressPercent').innerText = currentXP + "%";
+            document.getElementById('lvlBar').style.width = currentXP + "%";
+            
+            // Update Title based on level
+            const titles = ["Novice", "Squire", "Knight", "Veteran", "Hero", "Legend", "Mythic"];
+            const index = Math.min(Math.floor(currentLevel / 3), titles.length - 1);
+            document.getElementById('rankTitle').innerText = titles[index] + " Adventurer";
+        }
+
+        function playLevelAnimation() {
+            const notif = document.getElementById('levelUpNotif');
+            notif.innerHTML = `<i class="fas fa-crown"></i> <span>LEVEL UP! You are now Level ${currentLevel}!</span>`;
+            notif.classList.add('level-up-glow');
+            setTimeout(() => notif.classList.remove('level-up-glow'), 3000);
+        }
+
+        // --- Task Logic ---
+        function showContent(id, element) {
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            element.classList.add('active');
+        }
+
+        function addTask(type) {
+            const input = document.getElementById(`${type === 'boss' ? 'boss' : type}-input`);
+            const container = document.getElementById(`${type === 'boss' ? 'boss' : type}-list`);
+            const text = input.value.trim();
+            if (!text) return;
+
+            const card = document.createElement('div');
+            card.className = `task-card ${type}`;
+            const icon = type === 'boss' ? 'skull' : (type === 'quests' ? 'scroll' : 'running');
+            
+            card.innerHTML = `
+                <div class="task-icon"><i class="fas fa-${icon}"></i></div>
+                <div class="task-details"><h3>${text}</h3><p>Reward: ${xpPerTask} XP</p></div>
+                <button class="complete-btn" onclick="finishTask(this, '${type}', '${text}')">Finish</button>
+            `;
+            container.appendChild(card);
+            input.value = "";
+        }
+
+        function finishTask(btn, type, title) {
+            const card = btn.parentElement;
+            
+            if (type === 'boss') {
+                const achList = document.getElementById('achievements-list');
+                if(achList.querySelector('.empty-msg')) achList.querySelector('.empty-msg').remove();
+                
+                const ach = document.createElement('div');
+                ach.className = 'achievement-card';
+                ach.innerHTML = `<i class="fas fa-crown"></i><div><h4>Slayer of ${title}</h4><p>Lvl ${currentLevel} Achievement</p></div>`;
+                achList.appendChild(ach);
+            }
+
+            gainXP(); // Logic for level bar
+            card.style.transform = "translateX(50px)";
+            card.style.opacity = "0";
+            setTimeout(() => card.remove(), 300);
+        }
+    </script>
+</body>
+</html>
