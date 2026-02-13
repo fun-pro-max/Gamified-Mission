@@ -1,175 +1,291 @@
-let state = {
-    level: 1, xp: 0, gold: 100,
-    name: "Legendary Warrior",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
-    tasks: [], achievements: [],
-    events: [
-        { id: 1, title: "Grand Crusade: Clear 5 Tasks", reward: 150, approved: false },
-        { id: 2, title: "Slay the Code Bug", reward: 300, approved: false }
-    ],
-    myGuild: null,
-    guilds: [
-        { name: "Shadow Walkers", members: 12, rank: 1 },
-        { name: "Iron Order", members: 8, rank: 2 }
-    ]
-};
+/**
+ * QUESTLOG SUPREME ENGINE
+ */
 
-// --- Core Initialization ---
+const ADMIN_CRED = { user: 'admin', pass: 'admin123' };
+
+// Persistence Keys
+const K_USERS = 'realm_u_v5';
+const K_EVENTS = 'realm_e_v5';
+const K_WARS = 'realm_w_v5';
+const K_SESSION = 'realm_s_v5';
+
+// State
+let users = JSON.parse(localStorage.getItem(K_USERS)) || [];
+let globalEvents = JSON.parse(localStorage.getItem(K_EVENTS)) || [];
+let activeWar = JSON.parse(localStorage.getItem(K_WARS)) || null; // { guild, instructions, winner: null }
+let currentUser = null;
+
 window.onload = () => {
-    const saved = localStorage.getItem('questLog_v2');
-    if (saved) state = JSON.parse(saved);
-    updateUI();
-    renderTasks();
-    renderAchievements();
-    renderEvents();
-    renderGuilds();
-};
-
-function saveData() { localStorage.setItem('questLog_v2', JSON.stringify(state)); }
-
-function updateUI() {
-    document.getElementById('displayLevel').innerText = state.level;
-    document.getElementById('progressPercent').innerText = state.xp + "%";
-    document.getElementById('lvlBar').style.width = state.xp + "%";
-    document.getElementById('goldCount').innerText = state.gold;
-    document.getElementById('heroName').innerText = state.name;
-    document.getElementById('imagePreview').src = state.avatar;
-
-    if (state.myGuild) {
-        document.getElementById('guild-creation-zone').style.display = 'none';
-        document.getElementById('active-guild-view').style.display = 'block';
-        document.getElementById('myGuildName').innerText = state.myGuild.name;
-        document.getElementById('myGuildBanner').innerText = state.myGuild.name[0];
+    const session = localStorage.getItem(K_SESSION);
+    if (session) {
+        let user = (session === ADMIN_CRED.user) ? createAdmin() : users.find(u => u.name === session);
+        if (user) login(user);
     }
 }
 
-// --- Admin Event Logic ---
-function adminPostEvent() {
-    const title = document.getElementById('newEventTitle').value;
-    const gold = parseInt(document.getElementById('newEventGold').value);
-    if (!title || !gold) return;
+function handleAuth() {
+    const name = document.getElementById('username').value.trim();
+    const pass = document.getElementById('password').value.trim();
+    if (!name || !pass) return;
 
-    state.events.push({ id: Date.now(), title, reward: gold, approved: false });
+    if (name === ADMIN_CRED.user && pass === ADMIN_CRED.pass) {
+        login(createAdmin());
+    } else {
+        let user = users.find(u => u.name === name);
+        if (user) {
+            if (user.pass === pass) login(user);
+            else alert("Passkey Incorrect.");
+        } else {
+            user = { 
+                name, pass, role: 'player', gold: 100, 
+                level: 1, xp: 0, guild: null, tasks: [], achievements: [], warAppeal: false 
+            };
+            users.push(user);
+            saveDB();
+            login(user);
+        }
+    }
+}
+
+function createAdmin() {
+    return { name: ADMIN_CRED.user, role: 'admin', gold: 99999, level: 99, xp: 0, guild: null, tasks: [] };
+}
+
+function login(user) {
+    currentUser = user;
+    localStorage.setItem(K_SESSION, user.name);
+    document.getElementById('auth-overlay').style.display = 'none';
+    document.getElementById('sidebar-id').innerText = `ID: ${user.name} // ${user.role}`;
+    
+    refreshUI();
+}
+
+function saveDB() {
+    if (currentUser && currentUser.role !== 'admin') {
+        const idx = users.findIndex(u => u.name === currentUser.name);
+        if (idx > -1) users[idx] = currentUser;
+    }
+    localStorage.setItem(K_USERS, JSON.stringify(users));
+    localStorage.setItem(K_EVENTS, JSON.stringify(globalEvents));
+    localStorage.setItem(K_WARS, JSON.stringify(activeWar));
+}
+
+function refreshUI() {
+    // 1. Role Tabs
+    const isAdmin = currentUser.role === 'admin';
+    document.getElementById('admin-tab-link').style.display = isAdmin ? 'flex' : 'none';
+    document.getElementById('guild-tab-link').style.display = isAdmin ? 'none' : 'flex';
+    
+    // 2. War Front Restricted Access
+    let showWar = false;
+    if (isAdmin && activeWar) showWar = true;
+    if (activeWar && currentUser.guild === activeWar.guild) showWar = true;
+    
+    document.getElementById('war-front-link').style.display = showWar ? 'flex' : 'none';
+
+    // 3. Admin Only Visuals
+    document.querySelectorAll('.admin-only').forEach(e => e.style.display = isAdmin ? 'block' : 'none');
+    document.querySelectorAll('.leader-only').forEach(e => e.style.display = (currentUser.role === 'leader') ? 'block' : 'none');
+
+    // 4. Dashboard Stats
+    document.getElementById('heroName').innerText = currentUser.name;
+    document.getElementById('goldCount').innerText = currentUser.gold;
+    document.getElementById('displayLevel').innerText = currentUser.level;
+    document.getElementById('progressPercent').innerText = currentUser.xp + "%";
+    document.getElementById('lvlBar').style.width = currentUser.xp + "%";
+
+    // 5. Guild Logic
+    if (currentUser.guild) {
+        document.getElementById('guild-create-zone').style.display = 'none';
+        document.getElementById('active-guild').style.display = 'block';
+        document.getElementById('gTitle').innerText = currentUser.guild;
+        document.getElementById('gInitial').innerText = currentUser.guild[0].toUpperCase();
+        document.getElementById('roleText').innerText = "Status: " + currentUser.role.toUpperCase();
+        
+        // Appeal Status
+        if (currentUser.warAppeal) {
+            document.getElementById('request-war-btn').style.display = 'none';
+            document.getElementById('war-pending-msg').style.display = 'block';
+        }
+    }
+
+    renderTasks();
     renderEvents();
-    saveData();
+    renderHallOfFame();
+    renderApprovals();
+    renderBattlefield();
+}
+
+// --- Admin Approvals & War Logic ---
+function requestWar() {
+    currentUser.warAppeal = true;
+    saveDB();
+    refreshUI();
+    alert("Appeal sent to the Creator.");
+}
+
+function renderApprovals() {
+    const list = document.getElementById('approval-list');
+    if (!list) return;
+    list.innerHTML = "";
+    
+    const appeals = users.filter(u => u.warAppeal);
+    if (appeals.length === 0) {
+        list.innerHTML = "<p class='empty-msg'>No pending war appeals.</p>";
+        return;
+    }
+
+    appeals.forEach(u => {
+        list.innerHTML += `
+            <div class="profile-card hero-centered">
+                <h4>Guild: ${u.guild}</h4>
+                <p>Leader: ${u.name}</p>
+                <button class="complete-btn" onclick="approveWar('${u.name}', '${u.guild}')">Approve War</button>
+            </div>`;
+    });
+}
+
+function approveWar(leaderName, guildName) {
+    const instructions = prompt(`Enter War Instructions for ${guildName}:`);
+    if (instructions === null) return;
+
+    activeWar = { guild: guildName, leader: leaderName, instructions: instructions };
+    
+    // Reset the appeal status
+    const uIdx = users.findIndex(u => u.name === leaderName);
+    users[uIdx].warAppeal = false;
+    
+    saveDB();
+    refreshUI();
+}
+
+function renderBattlefield() {
+    if (!activeWar) return;
+    document.getElementById('war-guild-name').innerText = activeWar.guild + " Strategy";
+    document.getElementById('war-instructions-text').innerText = activeWar.instructions;
+}
+
+function declareWinner() {
+    if (!activeWar) return;
+    const gName = activeWar.guild;
+    const lName = activeWar.leader;
+
+    alert(`ADMIN: Declaring ${gName} as Victor! War concluded.`);
+    
+    // Grant Reward to Leader
+    const uIdx = users.findIndex(u => u.name === lName);
+    if (uIdx > -1) users[uIdx].gold += 1000;
+    
+    activeWar = null;
+    saveDB();
+    refreshUI();
+    showContent('dashboard', document.querySelector('.tab'));
+}
+
+// --- Admin Events ---
+function postEvent() {
+    const title = document.getElementById('evTitle').value;
+    const gold = parseInt(document.getElementById('evGold').value);
+    if (!title || !gold) return;
+    globalEvents.unshift({ title, gold });
+    saveDB();
+    renderEvents();
 }
 
 function renderEvents() {
-    const list = document.getElementById('admin-events-list');
+    const list = document.getElementById('event-list');
     list.innerHTML = "";
-    state.events.forEach(ev => {
-        const div = document.createElement('div');
-        div.className = "event-card";
-        div.innerHTML = `
-            <h4>${ev.title}</h4>
-            <span class="gold-reward"><i class="fas fa-coins"></i> ${ev.reward} Gold</span>
-            <button class="approve-btn" onclick="approveEvent(${ev.id})">Claim Reward</button>
-        `;
-        list.appendChild(div);
-    });
-}
-
-function approveEvent(id) {
-    const idx = state.events.findIndex(e => e.id === id);
-    state.gold += state.events[idx].reward;
-    state.events.splice(idx, 1);
-    updateUI();
-    renderEvents();
-    saveData();
-    alert("Admin approved your request! Gold added.");
-}
-
-// --- Guild Logic ---
-function openGuildModal() { document.getElementById('guildModal').style.display = 'grid'; }
-function closeGuildModal() { document.getElementById('guildModal').style.display = 'none'; }
-
-function confirmCreateGuild() {
-    const name = document.getElementById('newGuildName').value;
-    if (state.gold < 500) { alert("Not enough gold!"); return; }
-    if (!name) return;
-
-    state.gold -= 500;
-    state.myGuild = { name: name, members: 1, tasks: [], chat: [] };
-    closeGuildModal();
-    updateUI();
-    saveData();
-}
-
-function startGuildWar() {
-    if (state.myGuild.members < 5) {
-        alert("Requirements not met: Need at least 5 members to declare war!");
-        // Simulate recruitment for demo
-        if(confirm("Would you like to recruit mercenaries for 100 gold?")) {
-            if(state.gold >= 100) {
-                state.gold -= 100;
-                state.myGuild.members += 4;
-                updateUI();
-                saveData();
-            }
+    if (globalEvents.length === 0) {
+        if (currentUser.role !== 'admin') {
+            list.innerHTML = `<p class="empty-msg">Waiting for the Creator to post events...</p>`;
         }
         return;
     }
-    alert("GUILD WAR STARTED! Your guild is attacking 'Shadow Walkers'...");
-    setTimeout(() => {
-        const win = Math.random() > 0.5;
-        if(win) {
-            alert("VICTORY! Your guild earned 1000 Gold and Rank Points!");
-            state.gold += 1000;
-        } else {
-            alert("DEFEAT! Your defenses were breached.");
-        }
-        updateUI();
-        saveData();
-    }, 2000);
-}
-
-function sendGuildChat() {
-    const input = document.getElementById('chatInput');
-    if (!input.value) return;
-    const msg = `You: ${input.value}`;
-    const div = document.createElement('div');
-    div.innerText = msg;
-    document.getElementById('guildChat').appendChild(div);
-    input.value = "";
-}
-
-function renderGuilds() {
-    const list = document.getElementById('all-guilds-list');
-    state.guilds.forEach(g => {
-        const div = document.createElement('div');
-        div.className = "task-card quests";
-        div.innerHTML = `
-            <div class="task-icon"><i class="fas fa-shield"></i></div>
-            <div><h3>${g.name}</h3><p>Members: ${g.members}</p></div>
-            <button class="complete-btn" onclick="alert('Joined simulated guild!')">Join</button>
-        `;
-        list.appendChild(div);
+    globalEvents.forEach((ev, i) => {
+        list.innerHTML += `
+            <div class="event-item">
+                <h4 style="color:var(--accent-blue)">${ev.title}</h4>
+                <p style="color:var(--accent-gold)">+ ${ev.gold} Gold</p>
+                <button class="complete-btn" style="width:100%; margin-top:10px" onclick="claimEvent(${i})">Complete</button>
+            </div>`;
     });
 }
 
-// --- Existing Task Logic (Condensed) ---
+function claimEvent(i) {
+    if (currentUser.role === 'admin') return;
+    currentUser.gold += globalEvents[i].gold;
+    alert("Reward Claimed!");
+    updateUI();
+    saveDB();
+}
+
+// --- Tasks ---
 function addTask(type) {
-    const input = document.getElementById(`${type === 'boss' ? 'boss' : type}-input`);
-    if (!input.value) return;
-    state.tasks.push({ id: Date.now(), text: input.value, type, xp: type === 'boss' ? 100 : 25 });
-    input.value = ""; renderTasks(); saveData();
+    const inputId = type === 'training' ? 'tIn' : (type === 'quests' ? 'qIn' : 'bIn');
+    const val = document.getElementById(inputId).value;
+    if (!val) return;
+    currentUser.tasks.push({ id: Date.now(), text: val, type });
+    document.getElementById(inputId).value = "";
+    saveDB(); renderTasks();
+}
+
+function renderTasks() {
+    ['training', 'quests', 'boss'].forEach(type => {
+        const container = document.getElementById(`${type}-list`);
+        if(!container) return;
+        container.innerHTML = "";
+        currentUser.tasks.filter(t => t.type === type).forEach(t => {
+            container.innerHTML += `
+                <div class="profile-card" style="padding:15px; margin-bottom:10px;">
+                    <span style="flex:1">${t.text}</span>
+                    <button class="complete-btn" onclick="finishTask(${t.id})">Finish</button>
+                </div>`;
+        });
+    });
 }
 
 function finishTask(id) {
-    const idx = state.tasks.findIndex(t => t.id === id);
-    const task = state.tasks[idx];
-    if (task.type === 'boss') state.achievements.push({ title: `Slayer of ${task.text}`, date: new Date().toLocaleDateString() });
-    
-    // Gain a little gold for every task
-    state.gold += 10;
-    gainXP(task.xp);
-    state.tasks.splice(idx, 1);
-    renderTasks(); renderAchievements(); updateUI(); saveData();
+    const idx = currentUser.tasks.findIndex(t => t.id === id);
+    const task = currentUser.tasks[idx];
+    currentUser.xp += 25;
+    if (currentUser.xp >= 100) { currentUser.level++; currentUser.xp = 0; }
+    if (task.type === 'boss') {
+        currentUser.achievements.push({ text: task.text, date: new Date().toLocaleDateString() });
+    }
+    currentUser.tasks.splice(idx, 1);
+    refreshUI();
+    saveDB();
 }
 
-function gainXP(amt) {
-    state.xp += amt;
-    if (state.xp >= 100) { state.level++; state.xp -= 100; playLevelAnimation(); }
+function renderHallOfFame() {
+    const container = document.getElementById('ach-list');
+    if (!container) return;
+    container.innerHTML = "";
+    if (!currentUser.achievements || currentUser.achievements.length === 0) return;
+    currentUser.achievements.forEach((ach, i) => {
+        container.innerHTML += `
+            <div class="boss-frame">
+                <button class="delete-trophy" onclick="deleteTrophy(${i})"><i class="fas fa-trash"></i></button>
+                <i class="fas fa-dragon" style="font-size: 2rem; color: var(--accent-gold); margin-bottom: 10px;"></i>
+                <h3>${ach.text}</h3>
+                <p style="font-size:0.7rem; color:var(--text-dim)">Slayed on ${ach.date}</p>
+            </div>`;
+    });
+}
+
+function deleteTrophy(i) {
+    currentUser.achievements.splice(i, 1);
+    saveDB(); renderHallOfFame();
+}
+
+function createGuild() {
+    const name = document.getElementById('newGName').value;
+    if (currentUser.gold < 500) return alert("Insufficient Gold.");
+    currentUser.gold -= 500;
+    currentUser.guild = name;
+    currentUser.role = 'leader';
+    saveDB(); refreshUI();
 }
 
 function showContent(id, el) {
@@ -178,23 +294,3 @@ function showContent(id, el) {
     document.getElementById(id).classList.add('active');
     el.classList.add('active');
 }
-
-function renderTasks() {
-    ['training', 'quests', 'boss'].forEach(type => {
-        const container = document.getElementById(`${type === 'boss' ? 'boss' : type}-list`);
-        container.innerHTML = "";
-        state.tasks.filter(t => t.type === type).forEach(task => {
-            const div = document.createElement('div');
-            div.className = `task-card ${type}`;
-            div.innerHTML = `<h3>${task.text}</h3><button class="complete-btn" onclick="finishTask(${task.id})">Finish</button>`;
-            container.appendChild(div);
-        });
-    });
-}
-
-function renderAchievements() {
-    const list = document.getElementById('achievements-list');
-    list.innerHTML = state.achievements.map(a => `<div class="achievement-card"><h4>${a.title}</h4></div>`).join('');
-}
-
-function resetData() { if(confirm("Reset all?")) { localStorage.clear(); location.reload(); } }

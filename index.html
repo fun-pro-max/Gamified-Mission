@@ -3,202 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuestLog | Guilds & Glory</title>
+    <title>QuestLog | High Command</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Auth Overlay -->
+    <div id="auth-overlay" class="auth-modal">
+        <div class="auth-box">
+            <div class="auth-header">
+                <i class="fas fa-dragon"></i>
+                <h2>QuestLog</h2>
+                <p>Initialize Eternal Identity</p>
+            </div>
+            <div class="input-group-auth">
+                <i class="fas fa-user-shield"></i>
+                <input type="text" id="username" placeholder="Hero Name">
+            </div>
+            <div class="input-group-auth">
+                <i class="fas fa-key"></i>
+                <input type="password" id="password" placeholder="Passkey">
+            </div>
+            <button onclick="handleAuth()" class="auth-btn">Enter Realm</button>
+        </div>
+    </div>
+
+    <!-- Nav Bar -->
     <div class="sidebar">
         <div class="brand">
             <i class="fas fa-dragon"></i>
             <span>QuestLog</span>
         </div>
-        <nav id="sidebar-nav">
+        <nav class="nav-links">
             <div class="tab active" onclick="showContent('dashboard', this)">
-                <i class="fas fa-chart-line"></i> Dashboard
+                <i class="fas fa-chart-line"></i> <span>Dashboard</span>
             </div>
             <div class="tab" onclick="showContent('training', this)">
-                <i class="fas fa-dumbbell"></i> Training
+                <i class="fas fa-dumbbell"></i> <span>Training</span>
             </div>
             <div class="tab" onclick="showContent('quests', this)">
-                <i class="fas fa-scroll"></i> Quests
+                <i class="fas fa-scroll"></i> <span>Quests</span>
             </div>
             <div class="tab" onclick="showContent('boss-fights', this)">
-                <i class="fas fa-skull-crossbones"></i> Bosses
+                <i class="fas fa-skull-crossbones"></i> <span>Bosses</span>
             </div>
-            <div class="tab" onclick="showContent('guild-section', this)">
-                <i class="fas fa-shield-halved"></i> Guilds
+            <!-- Dynamic Role Tabs -->
+            <div id="guild-tab-link" class="tab" onclick="showContent('guilds', this)">
+                <i class="fas fa-shield-halved"></i> <span>Guilds</span>
+            </div>
+            <div id="admin-tab-link" class="tab" onclick="showContent('admin-requests', this)" style="display:none">
+                <i class="fas fa-envelope-open-text"></i> <span>Approvals</span>
+            </div>
+            <div id="war-front-link" class="tab war-tab-highlight" onclick="showContent('war-front', this)" style="display:none">
+                <i class="fas fa-crossed-swords"></i> <span>War Front</span>
             </div>
             <div class="tab" onclick="showContent('achievements', this)">
-                <i class="fas fa-trophy"></i> Achievements
+                <i class="fas fa-trophy"></i> <span>Hall of Fame</span>
             </div>
         </nav>
-        <div class="sidebar-footer">
-            <button onclick="resetData()" class="reset-btn">Reset Progress</button>
-        </div>
+        <div class="sidebar-id-tag" id="sidebar-id"></div>
     </div>
 
     <div class="main-content">
-        <!-- Dashboard / Profile Page -->
+        <!-- Dashboard -->
         <div class="content active" id="dashboard">
-            <div class="dashboard-layout">
-                <div class="profile-main">
+            <div class="dashboard-flex">
+                <div class="profile-section">
                     <header><h1>Hero Profile</h1></header>
-                    
                     <div class="profile-card">
-                        <div class="avatar-upload">
-                            <div class="avatar-preview">
-                                <img id="imagePreview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Hero">
-                                <div class="upload-overlay" onclick="document.getElementById('imageUpload').click();">
-                                    <i class="fas fa-camera"></i>
-                                </div>
-                            </div>
-                            <input type='file' id="imageUpload" accept=".png, .jpg, .jpeg" hidden />
+                        <div class="avatar-preview">
+                            <img id="imagePreview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix">
                         </div>
-
                         <div class="profile-info">
                             <div class="name-container">
-                                <h2 id="heroName" contenteditable="true" onblur="saveProfileName()">Hero</h2>
-                                <div class="currency">
-                                    <i class="fas fa-coins" style="color: #fbbf24;"></i>
-                                    <span id="goldCount">0</span>
+                                <h2 id="heroName">Hero</h2>
+                                <div class="gold-display">
+                                    <i class="fas fa-coins"></i> <span id="goldCount">0</span>
                                 </div>
                             </div>
-                            <p class="rank-text">Rank: <span id="rankTitle">Novice Adventurer</span></p>
-                            
+                            <p class="rank-text" id="rankTitle">Novice</p>
                             <div class="level-badge-container">
                                 <div class="level-circle"><span id="displayLevel">1</span></div>
                                 <div class="level-progress-info">
-                                    <span>XP Progress</span>
-                                    <span id="progressPercent">0%</span>
+                                    <span>XP: <span id="progressPercent">0%</span></span>
                                 </div>
                             </div>
-
-                            <div class="stats-bar">
-                                <div class="bar-container">
-                                    <span class="label">XP</span>
-                                    <div class="bar"><div class="fill xp" id="lvlBar" style="width: 0%;"></div></div>
-                                </div>
-                            </div>
+                            <div class="bar"><div class="fill xp" id="lvlBar"></div></div>
                         </div>
-                    </div>
-
-                    <div class="notification-card" id="levelUpNotif">
-                        <i class="fas fa-bolt"></i>
-                        <span id="notifText">Welcome to the Realm!</span>
                     </div>
                 </div>
 
-                <!-- Admin Event Panel -->
                 <aside class="event-panel">
                     <h3><i class="fas fa-crown"></i> Admin Events</h3>
-                    <p class="small-text">Tasks posted by the Creator</p>
-                    <div id="admin-events-list">
-                        <!-- Events populated by JS -->
-                    </div>
-                    <div class="admin-controls" id="adminOnlyUI">
-                        <hr>
-                        <p style="font-size: 0.7rem; color: var(--accent-blue);">ADMIN OVERRIDE</p>
-                        <input type="text" id="newEventTitle" placeholder="Event Name...">
-                        <input type="number" id="newEventGold" placeholder="Gold Reward">
-                        <button onclick="adminPostEvent()" class="admin-btn">Post Event</button>
+                    <div id="event-list"></div>
+                    
+                    <div id="admin-controls" class="admin-only">
+                        <hr class="panel-divider">
+                        <p class="admin-label">CREATOR CONSOLE</p>
+                        <input type="text" id="evTitle" placeholder="Event Title" class="admin-input">
+                        <input type="number" id="evGold" placeholder="Gold Reward" class="admin-input">
+                        <button onclick="postEvent()" class="complete-btn" style="width:100%">Post Event</button>
                     </div>
                 </aside>
             </div>
         </div>
 
-        <!-- Guild Section -->
-        <div class="content" id="guild-section">
-            <header>
-                <h1>Guild Hall</h1>
-                <div id="guild-creation-zone">
-                    <button class="create-guild-btn" onclick="openGuildModal()">Create Guild (500 Gold)</button>
-                </div>
-            </header>
-
-            <div id="active-guild-view" style="display: none;">
-                <div class="guild-header-card">
-                    <div class="guild-banner" id="myGuildBanner">G</div>
-                    <div>
-                        <h2 id="myGuildName">Guild Name</h2>
-                        <p id="myGuildStats">Members: 1 | Rank: #--</p>
-                    </div>
-                    <button class="war-btn" onclick="startGuildWar()">Start Guild War</button>
-                </div>
-                
-                <div class="guild-grid">
-                    <div class="guild-box">
-                        <h3>Guild Chat</h3>
-                        <div id="guildChat" class="chat-area"></div>
-                        <div class="input-group">
-                            <input type="text" id="chatInput" placeholder="Send message...">
-                            <button onclick="sendGuildChat()">Send</button>
-                        </div>
-                    </div>
-                    <div class="guild-box">
-                        <h3>Guild Tasks</h3>
-                        <div id="guild-tasks-list"></div>
-                        <div class="input-group">
-                            <input type="text" id="gTaskInput" placeholder="Assign task to members...">
-                            <button onclick="addGuildTask()">Assign</button>
-                        </div>
-                    </div>
-                </div>
+        <!-- Admin Approvals Tab -->
+        <div class="content" id="admin-requests">
+            <header><h1>War Approvals</h1></header>
+            <div id="approval-list" class="task-grid">
+                <!-- Appeals from leaders appear here -->
             </div>
+        </div>
 
-            <div id="guild-discovery">
-                <h3>Available Guilds</h3>
-                <div class="task-grid" id="all-guilds-list">
-                    <!-- Simulated Guilds -->
+        <!-- War Front (Restricted) -->
+        <div class="content" id="war-front">
+            <header><h1>The Battlefield</h1></header>
+            <div class="battle-card">
+                <div class="war-header">
+                    <i class="fas fa-burst fa-2x" style="color:var(--accent-red)"></i>
+                    <h2 id="war-guild-name">Active War</h2>
+                </div>
+                <div class="war-instructions-box">
+                    <h3><i class="fas fa-file-signature"></i> Admin Instructions</h3>
+                    <p id="war-instructions-text">Waiting for strategy...</p>
+                </div>
+                <div class="admin-only" style="margin-top: 20px;">
+                    <button class="complete-btn" style="background:var(--accent-green); width:100%" onclick="declareWinner()">Declare Victory & End War</button>
                 </div>
             </div>
         </div>
 
-        <!-- Task Sections (Training, Quests, Bosses) -->
-        <div class="content" id="training">
-            <header><h1>Training Grounds</h1></header>
-            <div class="input-group">
-                <input type="text" id="training-input" placeholder="New drill...">
-                <button onclick="addTask('training')"><i class="fas fa-plus"></i></button>
+        <!-- Guilds -->
+        <div class="content" id="guilds">
+            <header><h1>Guild Hall</h1></header>
+            <div id="guild-create-zone">
+                <div class="profile-card hero-centered">
+                    <h3>No Guild Found</h3>
+                    <p>Spend 500 Gold to establish a new Guild and become a Leader.</p>
+                    <input type="text" id="newGName" placeholder="Guild Name" class="guild-input">
+                    <button class="complete-btn" onclick="createGuild()">Create Guild (500g)</button>
+                </div>
             </div>
+
+            <div id="active-guild" style="display: none;">
+                <div class="profile-card">
+                    <div class="level-circle" id="gInitial">G</div>
+                    <div style="flex: 1;">
+                        <h2 id="gTitle">Guild Name</h2>
+                        <p id="roleText">Role: Member</p>
+                    </div>
+                    <button id="request-war-btn" class="complete-btn leader-only" onclick="requestWar()">Request War Sanction</button>
+                    <div id="war-pending-msg" class="leader-only" style="display:none; color:var(--accent-gold); font-weight:bold;">War Appeal Sent...</div>
+                </div>
+                <div class="guild-grid">
+                    <div class="profile-card vertical-align">
+                        <h3>Guild Chat</h3>
+                        <div id="chatBox" class="chat-area"></div>
+                        <div class="input-group">
+                            <input type="text" id="msgInput" placeholder="Message...">
+                            <button onclick="sendMsg()" class="add-btn"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                    <div class="profile-card vertical-align">
+                        <h3>Objectives</h3>
+                        <div id="gTasks" class="task-list-full"></div>
+                        <div class="input-group leader-only">
+                            <input type="text" id="gTaskIn" placeholder="New objective...">
+                            <button onclick="addGTask()" class="add-btn"><i class="fas fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks -->
+        <div class="content" id="training">
+            <header><h1>Training</h1></header>
+            <div class="input-group"><input type="text" id="tIn" placeholder="Training drills..."><button onclick="addTask('training')" class="add-btn">+</button></div>
             <div id="training-list" class="task-grid"></div>
         </div>
-
         <div class="content" id="quests">
             <header><h1>Quest Board</h1></header>
-            <div class="input-group">
-                <input type="text" id="quests-input" placeholder="New quest...">
-                <button onclick="addTask('quests')"><i class="fas fa-plus"></i></button>
-            </div>
+            <div class="input-group"><input type="text" id="qIn" placeholder="Objectives..."><button onclick="addTask('quests')" class="add-btn">+</button></div>
             <div id="quests-list" class="task-grid"></div>
         </div>
-
         <div class="content" id="boss-fights">
-            <header><h1>Bosses</h1></header>
-            <div class="input-group">
-                <input type="text" id="boss-input" placeholder="Summon Boss...">
-                <button onclick="addTask('boss')"><i class="fas fa-skull"></i></button>
-            </div>
+            <header><h1>Boss Raids</h1></header>
+            <div class="input-group"><input type="text" id="bIn" placeholder="Summon Boss..."><button onclick="addTask('boss')" class="add-btn"><i class="fas fa-skull"></i></button></div>
             <div id="boss-list" class="task-grid"></div>
         </div>
-
         <div class="content" id="achievements">
             <header><h1>Hall of Fame</h1></header>
-            <div id="achievements-list" class="task-grid"></div>
-        </div>
-    </div>
-
-    <!-- Modals -->
-    <div id="guildModal" class="modal">
-        <div class="modal-content">
-            <h2>Establish New Guild</h2>
-            <p>Cost: 500 Gold</p>
-            <input type="text" id="newGuildName" placeholder="Enter Guild Name...">
-            <div class="modal-btns">
-                <button onclick="confirmCreateGuild()" class="confirm-btn">Create</button>
-                <button onclick="closeGuildModal()" class="cancel-btn">Cancel</button>
-            </div>
+            <div id="ach-list" class="achievement-grid"></div>
         </div>
     </div>
 
