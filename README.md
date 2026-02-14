@@ -1,50 +1,83 @@
 # 🛡️ QuestLog: Eternal Realm
 
-**QuestLog** is a high-octane, real-time gamified task management system built to turn productivity into a competitive RPG experience. Featuring a centralized economy controlled by a "Creator" (Admin), guild-based warfare, and a "Identity till Death" philosophy.
+**QuestLog** is a high-performance, real-time gamified productivity application that transforms personal discipline into a high-fantasy RPG experience. Built with a focus on **Identity Persistence**, **Centralized Economy**, and **Tactical Warfare**.
 
-![QuestLog Banner](https://img.shields.io/badge/Status-Beta-accent--blue)
-![Firebase](https://img.shields.io/badge/Backend-Firebase-orange)
-![Responsive](https://img.shields.io/badge/Design-Responsive-green)
+![QuestLog Banner](https://img.shields.io/badge/Realm-Live-accent--green)
+![Firebase](https://img.shields.io/badge/Backend-Firebase_Firestore-orange)
+![Design](https://img.shields.io/badge/UI-Glass--Morphism-blue)
+![Mobile](https://img.shields.io/badge/Mobile-Responsive-purple)
 
 ---
 
-## 🌌 The Concept
+## 🌌 The Philosophy: Identity Till Death
 
-QuestLog is not just a to-do list; it is a living realm. Unlike standard apps, QuestLog operates on a **command-driven economy**. You cannot "cheat" your way to wealth by adding easy tasks. To gain power, you must level up through personal discipline and earn gold through the Creator's global events.
+In the Eternal Realm, your identity is not temporary. Once a Hero initializes their name and passkey, they are locked into that session. 
+*   **Permanent Sessions:** There is no logout button. Your Hero is your permanent digital twin on your device.
+*   **The Command Economy:** Unlike other gamified apps, you cannot "grind" gold by adding easy habits. Gold is a rare resource distributed only by **The Creator** (Admin) or won through sanctioned **Guild Wars**.
 
-### 🎭 The Trinity of Roles
+---
 
-1.  **The Creator (Admin):** 
-    *   Holds the keys to the realm.
-    *   Posts global events that reward players with Gold.
-    *   Approves Guild War sanctions and provides custom war strategies.
-    *   Manually declares war victors.
-2.  **Guild Leaders:** 
-    *   Heroes who have earned **500 Gold** and established their own legacy.
-    *   Can assign guild-specific objectives and chat with members.
-    *   Hold the exclusive right to appeal to the Creator for War Sanctions.
-3.  **The Heroes (Players):** 
-    *   Start with **100 Gold** and a "Novice" rank.
-    *   Complete Training, Quests, and Boss Raids to earn XP and level up.
-    *   Must rely on the Creator's events to earn Gold.
+## 🎭 The Trinity of Roles
+
+### 👑 The Creator (Admin)
+*   **Hidden Access:** Exclusive access via secret credentials.
+*   **Global Authority:** Posts "World Events" that award gold to all players.
+*   **War Arbiter:** Manages the "Approvals" hub to sanction wars, provides custom battle instructions, and declares the final victors.
+
+### 🛡️ Guild Leaders
+*   **Promotion:** Heroes who amass **500 Gold** can establish a Guild, promoting them to the rank of Leader.
+*   **Command & Control:** Leaders assign guild objectives, manage chats, and appeal to the Creator for War Sanctions.
+
+### 🗡️ The Heroes (Players)
+*   **The Grind:** Complete Training and Quests to earn **XP only**. 
+*   **Leveling:** Experience leads to Level Ups, unlocking higher Ranks (Novice → Knight → Legend).
+*   **Legacy:** Defeating Bosses allows the player to "Frame" trophies in the **Hall of Fame**.
 
 ---
 
 ## 🚀 Key Features
 
-*   **Real-Time Synergy:** Powered by Firebase Firestore. When the Admin posts an event or approves a war, it appears on all players' screens instantly without a refresh.
-*   **Identity Till Death:** Once you enter the realm with a name and passkey, that is your identity. There is no logout button; your Hero lives as long as your session exists.
-*   **The War Front:** A restricted, high-stakes tab visible only to the Admin and the specific Guild authorized for battle.
-*   **Hall of Fame:** Boss victories are "framed" as trophies. Players can curate their legacy by keeping or deleting these frames.
-*   **Responsive UI:** 
-    *   **Desktop:** Professional glass-morphism sidebar.
-    *   **Mobile:** Intuitive bottom navigation bar with icons for a native app feel.
+### 📸 Passport Profile Layout
+A professional, aligned info stack featuring:
+*   **Passport Image:** A fixed-aspect ratio profile picture.
+*   **Info Stack:** Neatly aligned Name, Gold, Rank, and Level.
+*   **Visual XP Bar:** A glowing, real-time progress bar that fills as you complete tasks.
+
+### 📅 Interactive Realm Calendar
+*   A persistent habit tracker on the dashboard.
+*   Mark your progress daily to visualize your consistency across months.
+*   Data is synced to the cloud, ensuring your "Marked Dates" follow you everywhere.
+
+### ⚔️ The War Front
+*   A restricted, high-stakes tab.
+*   Invisible to the public; only accessible by the Admin and the Guild currently authorized for combat.
+*   Features custom strategy instructions issued directly by the Admin.
+
+### 🏆 Hall of Fame
+*   Boss victories aren't just text—they are trophies.
+*   Complete a Boss Raid to generate a "Framed" achievement that stays in your Hall of Fame forever (or until you choose to erase it).
+
+### 📱 Full Responsiveness
+*   **Desktop:** Professional glass-morphism sidebar.
+*   **Mobile:** Auto-adjusting **Bottom Navigation Bar** with intuitive icons, ensuring the "Realm" feels like a native app on any phone or tablet.
 
 ---
 
 ## 🛠️ Technical Setup
 
-### 1. Installation
-Clone this repository to your local machine:
-```bash
-git clone https://github.com/yourusername/questlog.git
+### 1. Requirements
+*   A Firebase Project (Firestore Database).
+*   Standard Web Browser (Chrome recommended).
+
+### 2. Firebase Configuration
+Update the `firebaseConfig` object in `script.js` with your project credentials:
+
+```javascript
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "...",
+  appId: "..."
+};
