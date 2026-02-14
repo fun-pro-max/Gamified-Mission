@@ -1,12 +1,10 @@
 {
   "name": "QuestLog: Eternal Realm",
   "short_name": "QuestLog",
-  "description": "Gamified Task Manager & RPG",
-  "start_url": "index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#1e293b",
-  "orientation": "portrait",
   "icons": [
     {
       "src": "icon-192.png",

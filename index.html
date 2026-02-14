@@ -244,13 +244,11 @@
 
 
     <script src="script.js"></script>
-    <script>
+   <script>
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js')
-        .then(reg => console.log('Service Worker registered!'))
-        .catch(err => console.log('Service Worker failed:', err));
-    });
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log("PWA Active"))
+      .catch(err => console.log("PWA Error", err));
   }
 </script>
 </body>
