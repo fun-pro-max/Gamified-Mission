@@ -1,3 +1,4 @@
+let currentNavDate = new Date();
 // 1. Firebase Configuration
 const firebaseConfig = {
     apiKey: "AIzaSyDhHTiL8iTkoS7izGOneAY9W8w_aZVApAk",
@@ -36,7 +37,13 @@ window.onload = () => {
 
 async function autoLogin(name) {
     if (name === ADMIN_CRED.user) {
-        login(createAdminSession());
+        const adminDoc = await db.collection("users").doc("admin_global").get();
+        let adminData = createAdminSession();
+        if (adminDoc.exists) {
+            adminData.avatar = adminDoc.data().avatar;
+            adminData.markedDates = adminDoc.data().markedDates || [];
+        }
+        login(adminData);
     } else if (db) {
         const doc = await db.collection("users").doc(name).get();
         if (doc.exists) login({ name, ...doc.data() });
@@ -81,14 +88,84 @@ async function handleAuth() {
 function createAdminSession() {
     return { name: ADMIN_CRED.user, role: 'admin', gold: 99999, level: 99, xp: 0, tasks: [] };
 }
+function renderCalendar() {
+    const grid = document.getElementById('calendarGrid');
+    const monthLabel = document.getElementById('calendarMonth');
+    if (!grid) return;
 
+    grid.innerHTML = "";
+    const year = currentNavDate.getFullYear();
+    const month = currentNavDate.getMonth();
+
+    monthLabel.innerText = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(currentNavDate);
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    // Padding for start of month
+    for (let i = 0; i < firstDay; i++) {
+        grid.innerHTML += `<div></div>`;
+    }
+
+    // Generate Days
+    const today = new Date();
+    const markedDates = currentUser.markedDates || [];
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${month + 1}-${day}`;
+        const isToday = today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
+        const isMarked = markedDates.includes(dateStr);
+
+        grid.innerHTML += `
+            <div class="calendar-day ${isToday ? 'today' : ''} ${isMarked ? 'marked' : ''}" 
+                 onclick="toggleDateMark('${dateStr}')">
+                ${day}
+            </div>`;
+    }
+}
+
+function changeMonth(dir) {
+    currentNavDate.setMonth(currentNavDate.getMonth() + dir);
+    renderCalendar();
+}
+
+async function toggleDateMark(dateStr) {
+    if (currentUser.role === 'admin') {
+        // Handle Admin Calendar Persistence
+        if (!currentUser.markedDates) currentUser.markedDates = [];
+        const idx = currentUser.markedDates.indexOf(dateStr);
+        if (idx > -1) currentUser.markedDates.splice(idx, 1);
+        else currentUser.markedDates.push(dateStr);
+
+        await db.collection("users").doc("admin_global").set({ markedDates: currentUser.markedDates }, { merge: true });
+    } else {
+        // Handle Player Calendar Persistence
+        if (!currentUser.markedDates) currentUser.markedDates = [];
+        const idx = currentUser.markedDates.indexOf(dateStr);
+        if (idx > -1) currentUser.markedDates.splice(idx, 1);
+        else currentUser.markedDates.push(dateStr);
+
+        await db.collection("users").doc(currentUser.name).update({ markedDates: currentUser.markedDates });
+    }
+    renderCalendar();
+}
 function login(user) {
     currentUser = user;
     localStorage.setItem(K_SESSION, user.name);
     document.getElementById('auth-overlay').style.display = 'none';
+    
+    // DISPLAY SAVED AVATAR
+    if (user.avatar) {
+        document.getElementById('imagePreview').src = user.avatar;
+    } else {
+        // Default avatar if none exists
+        document.getElementById('imagePreview').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
+    }
+
     const idTag = document.getElementById('sidebar-id');
     if(idTag) idTag.innerText = `ID: ${user.name} // ${user.role}`;
     refreshUI();
+    renderCalendar();
 }
 
 // --- GLOBAL LISTENERS ---
@@ -129,9 +206,17 @@ function refreshUI() {
     document.querySelectorAll('.admin-only').forEach(e => e.style.display = isAdmin ? 'block' : 'none');
     document.querySelectorAll('.leader-only').forEach(e => e.style.display = (currentUser.role === 'leader') ? 'block' : 'none');
 
+  // --- Update Text Info ---
     document.getElementById('heroName').innerText = currentUser.name;
     document.getElementById('goldCount').innerText = currentUser.gold;
     document.getElementById('displayLevel').innerText = currentUser.level;
+
+    // ADD THESE 3 LINES to make the Rank update when you level up
+    const titles = ["Novice", "Squire", "Knight", "Knight Captain", "Hero", "Legend", "Demigod"];
+    const tIdx = Math.min(Math.floor(currentUser.level / 5), titles.length - 1);
+    document.getElementById('rankTitle').innerText = titles[tIdx] + " Adventurer";
+
+    // --- Update XP Bar (Make sure these IDs match your new HTML) ---
     document.getElementById('lvlBar').style.width = currentUser.xp + "%";
     document.getElementById('progressPercent').innerText = currentUser.xp + "%";
 
@@ -298,4 +383,32 @@ function showContent(id, el) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     el.classList.add('active');
+}
+// --- Avatar Upload Logic ---
+function uploadAvatar(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = async function(e) {
+            const base64Image = e.target.result;
+            
+            // 1. Update UI immediately
+            document.getElementById('imagePreview').src = base64Image;
+            
+            // 2. Save to State
+            currentUser.avatar = base64Image;
+            
+            // 3. Save to Database
+            if (currentUser.role === 'admin') {
+                // For Admin, we save to a special global doc
+                await db.collection("users").doc("admin_global").set({ avatar: base64Image }, { merge: true });
+            } else {
+                // For Players, we update their user doc
+                await db.collection("users").doc(currentUser.name).update({ avatar: base64Image });
+            }
+            alert("Identity Visual Updated.");
+        };
+        
+        reader.readAsDataURL(input.files[0]);
+    }
 }

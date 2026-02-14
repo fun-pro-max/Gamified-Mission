@@ -33,7 +33,26 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg-dark); color: va
 
 /* Cards */
 .profile-card { background: var(--sidebar-bg); padding: 30px; border-radius: 25px; display: flex; align-items: center; gap: 40px; border: 1px solid var(--glass); margin-bottom: 25px; position: relative; }
-.avatar-preview { width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--accent-purple); overflow: hidden; box-shadow: 0 0 15px rgba(168, 85, 247, 0.3); }
+.avatar-preview {
+    position: relative; /* Needed for the overlay to sit inside */
+    cursor: pointer;
+}
+
+.upload-overlay {
+    position: absolute;
+    top: 0; left: 0; 
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex; justify-content: center; align-items: center;
+    opacity: 0; /* Hidden by default */
+    transition: 0.3s;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.avatar-preview:hover .upload-overlay {
+    opacity: 1; /* Shows up when you hover over the profile picture */
+}
 .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
 .gold-display { color: var(--accent-gold); font-weight: 700; font-size: 1.2rem; }
 
@@ -45,10 +64,37 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg-dark); color: va
 
 /* Hall of Fame */
 .achievement-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+/* --- Optimized Hall of Fame Frames --- */
 .boss-frame { 
     background: linear-gradient(145deg, #1e293b, #0f172a); 
-    padding: 25px; border-radius: 20px; border: 2px solid var(--accent-gold); 
-    text-align: center; position: relative; box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+    padding: 25px; 
+    border-radius: 20px; 
+    border: 2px solid var(--accent-gold); 
+    
+    /* ADD THESE 4 LINES TO FIX ALIGNMENT */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center; 
+
+    position: relative; 
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+    min-height: 160px; /* Ensures all frames are the same height on mobile */
+}
+
+/* Fix text margins inside the frame so they don't push up/down */
+.boss-frame h3 {
+    margin: 10px 0 5px 0;
+    line-height: 1.2;
+    font-size: 1.1rem;
+    color: var(--text-main);
+}
+
+.boss-frame p {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--text-dim);
 }
 .delete-trophy { position: absolute; top: 10px; right: 10px; background: transparent; border: none; color: var(--accent-red); cursor: pointer; opacity: 0.5; }
 
@@ -73,10 +119,204 @@ input { flex: 1; background: var(--bg-dark); border: 1px solid #334155; padding:
     .tab { padding: 0; flex-direction: column; gap: 3px; flex: 1; border: none !important; background: none !important; }
     .tab i { font-size: 1.1rem; }
     .tab span { font-size: 0.55rem; font-weight: 600; }
+    .content header h1 {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+    }
+    .hero-profile-layout {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .hero-info-stack {
+        align-items: center;
+    }
+    .xp-container-stack {
+        margin: 15px auto 0 auto;
+    }
+    .calendar-grid { gap: 5px; }
+    .calendar-day { font-size: 0.7rem; }
+    .achievement-grid {
+        padding: 10px;
+        gap: 15px; /* Tighter gap for better phone fit */
+    }
     .main-content { padding: 20px; padding-bottom: 90px; }
     .dashboard-flex { flex-direction: column; }
     .profile-card { flex-direction: column; text-align: center; }
 }
+/* --- Interactive Calendar --- */
+.calendar-card {
+    flex-direction: column;
+    padding: 20px !important;
+}
+
+.calendar-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.calendar-header h3 {
+    font-size: 1.1rem;
+    color: var(--accent-blue);
+    letter-spacing: 1px;
+}
+
+.calendar-header button {
+    background: var(--glass);
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    width: 100%;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.7rem;
+    color: var(--accent-purple);
+    margin-bottom: 10px;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    width: 100%;
+}
+
+.calendar-day {
+    aspect-ratio: 1 / 1;
+    display: grid;
+    place-items: center;
+    font-size: 0.8rem;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: 0.3s;
+    border: 1px solid transparent;
+}
+
+.calendar-day:hover {
+    background: var(--glass);
+    border-color: var(--accent-blue);
+}
+
+.calendar-day.today {
+    border-color: var(--accent-purple);
+    color: var(--accent-purple);
+    font-weight: bold;
+}
+
+.calendar-day.marked {
+    background: rgba(74, 222, 128, 0.2);
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+    box-shadow: 0 0 10px rgba(74, 222, 128, 0.2);
+}
+
+/* --- Restructured Profile Layout --- */
+.hero-profile-layout {
+    display: flex;
+    align-items: flex-start; /* Aligns items to the top */
+    gap: 30px;
+    padding: 25px !important;
+}
+
+/* Passport Size Image */
+.avatar-container {
+    width: 140px;  /* Passport Width */
+    height: 170px; /* Passport Height */
+    border-radius: 12px;
+    border: 3px solid var(--accent-purple);
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+.avatar-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Info Stack Alignment */
+.hero-info-stack {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 8px;
+    flex: 1;
+}
+
+.hero-info-stack h2 {
+    font-size: 1.8rem;
+    color: var(--text-main);
+    margin-bottom: 5px;
+    text-transform: capitalize;
+}
+
+.info-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+}
+
+.info-label {
+    color: var(--text-dim);
+    font-weight: 400;
+}
+
+.info-value {
+    color: var(--accent-blue);
+    font-weight: 600;
+}
+
+/* XP Progress Bar Styling */
+.xp-container-stack {
+    margin-top: 15px;
+    width: 100%;
+    max-width: 300px;
+}
+
+.xp-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent-purple);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.xp-bar-outer {
+    width: 100%;
+    height: 12px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--glass);
+}
+
+.xp-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue));
+    box-shadow: 0 0 10px var(--accent-purple);
+    transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Mobile Fix */
+
 
 /* Auth */
 .auth-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 2000; display: flex; align-items: center; justify-content: center; }
