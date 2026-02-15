@@ -1,9 +1,13 @@
-// --- Global State ---
+/**
+ * QUESTLOG SUPREME - FINAL VERSION
+ * Features: High-Speed Sync, Identity-Lock, Tactical Warfare, Interactive Calendar
+ */
+
+// 1. Configuration & Global State
 let currentNavDate = new Date();
 const ADMIN_CRED = { user: 'Gourav', pass: 'admin' };
 const K_SESSION = 'realm_active_session_v5';
 
-// 1. Firebase Configuration
 const firebaseConfig = {
     apiKey: "AIzaSyDhHTiL8iTkoS7izGOneAY9W8w_aZVApAk",
     authDomain: "questlog-66f75.firebaseapp.com",
@@ -18,7 +22,7 @@ let db;
 try {
     firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
-    console.log("Firebase Realm Connected");
+    console.log("Realm Cloud Connected");
 } catch (error) {
     console.error("Firebase Init Error:", error);
 }
@@ -43,15 +47,19 @@ async function autoLogin(name) {
         const adminDoc = await db.collection("users").doc("admin_global").get();
         let adminData = createAdminSession();
         if (adminDoc.exists) {
-            const data = adminDoc.data();
-            // Merge cloud data (tasks, avatar, dates) into admin session
-            adminData = { ...adminData, ...data };
+            adminData = { ...adminData, ...adminDoc.data() };
         }
         login(adminData);
     } else if (db) {
-        const doc = await db.collection("users").doc(name).get();
-        if (doc.exists) {
-            login({ name, ...doc.data() });
+        try {
+            const doc = await db.collection("users").doc(name).get();
+            if (doc.exists) {
+                login({ name, ...doc.data() });
+            } else {
+                document.getElementById('auth-overlay').style.display = 'flex';
+            }
+        } catch (e) {
+            document.getElementById('auth-overlay').style.display = 'flex';
         }
     }
 }
@@ -64,7 +72,6 @@ async function handleAuth() {
     if (!name || !pass) return;
 
     if (name === ADMIN_CRED.user && pass === ADMIN_CRED.pass) {
-        // For Admin, check if cloud data exists first
         const adminDoc = await db.collection("users").doc("admin_global").get();
         let adminData = createAdminSession();
         if (adminDoc.exists) adminData = { ...adminData, ...adminDoc.data() };
@@ -72,7 +79,7 @@ async function handleAuth() {
         return;
     }
 
-    if (!db) return alert("Database not connected.");
+    if (!db) return alert("Database offline.");
 
     try {
         const userRef = db.collection("users").doc(name);
@@ -82,7 +89,7 @@ async function handleAuth() {
             if (doc.data().pass === pass) {
                 login({ name, ...doc.data() });
             } else {
-                alert("Passkey Incorrect.");
+                alert("Incorrect Passkey.");
             }
         } else {
             const newUser = { 
@@ -102,131 +109,114 @@ function createAdminSession() {
 
 function login(user) {
     currentUser = user;
-    // Ensure tasks is always an array
     if (!currentUser.tasks) currentUser.tasks = [];
-    
     localStorage.setItem(K_SESSION, user.name);
     document.getElementById('auth-overlay').style.display = 'none';
     
-    if (user.avatar) {
-        document.getElementById('imagePreview').src = user.avatar;
-    } else {
-        document.getElementById('imagePreview').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
-    }
-
+    if (user.avatar) document.getElementById('imagePreview').src = user.avatar;
     const idTag = document.getElementById('sidebar-id');
     if(idTag) idTag.innerText = `ID: ${user.name} // ${user.role}`;
+    
     refreshUI();
     renderCalendar();
 }
 
-// --- PERSISTENCE ---
+// --- FAST CLOUD SYNC (Background) ---
 async function savePlayer() {
     if (!db || !currentUser) return;
+    const docId = currentUser.role === 'admin' ? "admin_global" : currentUser.name;
+    const data = (currentUser.role === 'admin') ? {
+        avatar: currentUser.avatar || null,
+        markedDates: currentUser.markedDates || [],
+        tasks: currentUser.tasks || []
+    } : {
+        gold: currentUser.gold, xp: currentUser.xp, level: currentUser.level,
+        guild: currentUser.guild, role: currentUser.role, tasks: currentUser.tasks || [],
+        achievements: currentUser.achievements || [], warAppeal: currentUser.warAppeal || false,
+        markedDates: currentUser.markedDates || [], avatar: currentUser.avatar || null
+    };
+
     try {
-        if (currentUser.role === 'admin') {
-            await db.collection("users").doc("admin_global").set({
-                avatar: currentUser.avatar || null,
-                markedDates: currentUser.markedDates || [],
-                tasks: currentUser.tasks || []
-            }, { merge: true });
-        } else {
-            await db.collection("users").doc(currentUser.name).update({
-                gold: currentUser.gold,
-                xp: currentUser.xp,
-                level: currentUser.level,
-                guild: currentUser.guild,
-                role: currentUser.role,
-                tasks: currentUser.tasks || [],
-                achievements: currentUser.achievements || [],
-                warAppeal: currentUser.warAppeal || false,
-                markedDates: currentUser.markedDates || [],
-                avatar: currentUser.avatar || null
-            });
-        }
-    } catch (e) {
-        console.error("Cloud Save Failed", e);
-    }
+        await db.collection("users").doc(docId).set(data, { merge: true });
+    } catch (e) { console.error("Sync Error", e); }
 }
 
-// --- GLOBAL LISTENERS ---
+// --- REAL-TIME LISTENERS ---
 function startGlobalListeners() {
     if (!db) return;
-    db.collection("events").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
-        globalEvents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    db.collection("events").orderBy("createdAt", "desc").onSnapshot(snap => {
+        globalEvents = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderEvents();
     });
-    db.collection("warRoom").doc("status").onSnapshot((doc) => {
+    db.collection("warRoom").doc("status").onSnapshot(doc => {
         if (doc.exists) {
             activeWar = doc.data().activeWar || null;
             if(currentUser) refreshUI();
         }
     });
-    db.collection("users").where("warAppeal", "==", true).onSnapshot((snapshot) => {
-        if (currentUser && currentUser.role === 'admin') {
-            const appeals = snapshot.docs.map(doc => ({ name: doc.id, ...doc.data() }));
-            renderApprovals(appeals);
-        }
+    db.collection("users").where("warAppeal", "==", true).onSnapshot(snap => {
+        if (currentUser && currentUser.role === 'admin') renderApprovals(snap.docs.map(d => ({ name: d.id, ...d.data() })));
     });
 }
 
-// --- UI ENGINE ---
+// --- UI ENGINE (Optimized for low response time) ---
 function refreshUI() {
     if (!currentUser) return;
-    const isAdmin = currentUser.role === 'admin';
-    
-    document.getElementById('admin-tab-link').style.display = isAdmin ? 'flex' : 'none';
-    document.getElementById('guild-tab-link').style.display = isAdmin ? 'none' : 'flex';
-    
-    let canSeeWar = (isAdmin && activeWar) || (activeWar && currentUser.guild === activeWar.guild);
-    document.getElementById('war-front-link').style.display = canSeeWar ? 'flex' : 'none';
-
-    document.querySelectorAll('.admin-only').forEach(e => e.style.display = isAdmin ? 'block' : 'none');
-    document.querySelectorAll('.leader-only').forEach(e => e.style.display = (currentUser.role === 'leader') ? 'block' : 'none');
-
-    document.getElementById('heroName').innerText = currentUser.name;
-    document.getElementById('goldCount').innerText = currentUser.gold;
-    document.getElementById('displayLevel').innerText = currentUser.level;
-
-    const titles = ["Novice", "Squire", "Knight", "Knight Captain", "Hero", "Legend", "Demigod"];
-    const tIdx = Math.min(Math.floor(currentUser.level / 5), titles.length - 1);
-    document.getElementById('rankTitle').innerText = titles[tIdx] + " Adventurer";
-
-    document.getElementById('lvlBar').style.width = currentUser.xp + "%";
-    document.getElementById('progressPercent').innerText = currentUser.xp + "%";
-
-    if (currentUser.guild) {
-        document.getElementById('guild-create-zone').style.display = 'none';
-        document.getElementById('active-guild').style.display = 'block';
-        document.getElementById('gTitle').innerText = currentUser.guild;
-        document.getElementById('gInitial').innerText = currentUser.guild[0].toUpperCase();
-        document.getElementById('roleText').innerText = "Status: " + currentUser.role.toUpperCase();
+    requestAnimationFrame(() => {
+        const isAdmin = currentUser.role === 'admin';
+        document.getElementById('admin-tab-link').style.display = isAdmin ? 'flex' : 'none';
+        document.getElementById('guild-tab-link').style.display = isAdmin ? 'none' : 'flex';
         
-        if (currentUser.warAppeal) {
-            document.getElementById('request-war-btn').style.display = 'none';
-            document.getElementById('war-pending-msg').style.display = 'block';
-        }
-    }
+        let canSeeWar = (isAdmin && activeWar) || (activeWar && currentUser.guild === activeWar.guild);
+        document.getElementById('war-front-link').style.display = canSeeWar ? 'flex' : 'none';
 
-    renderTasks();
-    renderHallOfFame();
+        document.querySelectorAll('.admin-only').forEach(e => e.style.display = isAdmin ? 'block' : 'none');
+        document.querySelectorAll('.leader-only').forEach(e => e.style.display = (currentUser.role === 'leader') ? 'block' : 'none');
+
+        document.getElementById('heroName').innerText = currentUser.name;
+        document.getElementById('goldCount').innerText = currentUser.gold;
+        document.getElementById('displayLevel').innerText = currentUser.level;
+
+        const titles = ["Novice", "Squire", "Knight", "Veteran", "Hero", "Legend", "Demigod"];
+        const tIdx = Math.min(Math.floor(currentUser.level / 5), titles.length - 1);
+        document.getElementById('rankTitle').innerText = titles[tIdx] + " Adventurer";
+
+        document.getElementById('lvlBar').style.width = currentUser.xp + "%";
+        document.getElementById('progressPercent').innerText = currentUser.xp + "%";
+
+        if (currentUser.guild) {
+            document.getElementById('guild-create-zone').style.display = 'none';
+            document.getElementById('active-guild').style.display = 'block';
+            document.getElementById('gTitle').innerText = currentUser.guild;
+            document.getElementById('gInitial').innerText = currentUser.guild[0].toUpperCase();
+            document.getElementById('roleText').innerText = "Status: " + currentUser.role.toUpperCase();
+            if (currentUser.warAppeal) {
+                document.getElementById('request-war-btn').style.display = 'none';
+                document.getElementById('war-pending-msg').style.display = 'block';
+            }
+        }
+        renderTasks();
+        renderHallOfFame();
+        if (activeWar) renderBattlefield();
+    });
 }
 
-// --- TASK ACTIONS (FIXED FOR PERSISTENCE) ---
-async function addTask(type) {
+// --- SNAPPY TASK ACTIONS ---
+function addTask(type) {
     const inputId = type === 'training' ? 'tIn' : (type === 'quests' ? 'qIn' : 'bIn');
-    const val = document.getElementById(inputId).value;
+    const input = document.getElementById(inputId);
+    const val = input.value.trim();
     if (!val) return;
 
-    if (!currentUser.tasks) currentUser.tasks = [];
-    
-    // Add locally
+    // 1. Instant Local Update
     currentUser.tasks.push({ id: Date.now(), text: val, type });
-    document.getElementById(inputId).value = "";
+    input.value = "";
     
-    // Save to cloud immediately
-    await savePlayer(); 
+    // 2. Instant Render
     renderTasks();
+    
+    // 3. Background Save
+    savePlayer();
 }
 
 function renderTasks() {
@@ -234,59 +224,62 @@ function renderTasks() {
         const container = document.getElementById(`${type}-list`);
         if(!container) return;
         container.innerHTML = "";
-        const myTasks = currentUser.tasks || [];
-        myTasks.filter(t => t.type === type).forEach(t => {
+        (currentUser.tasks || []).filter(t => t.type === type).forEach(t => {
             container.innerHTML += `
-                <div class="profile-card" style="padding:15px; margin-bottom:10px; border-radius:15px;">
+                <div class="profile-card" style="padding:15px; margin-bottom:10px; animation: slideInUp 0.3s ease-out;">
                     <span style="flex:1; font-weight:600;">${t.text}</span>
-                    <button class="complete-btn" onclick="finishTask(${t.id})">Finish</button>
+                    <button class="complete-btn" onclick="finishTask(${t.id}, event)">Finish</button>
                 </div>`;
         });
     });
 }
 
-async function finishTask(id) {
+function finishTask(id, event) {
     const idx = currentUser.tasks.findIndex(t => t.id === id);
     if (idx === -1) return;
-    const task = currentUser.tasks[idx];
 
-    // XP Logic
-    currentUser.xp += 25;
-    if (currentUser.xp >= 100) { currentUser.level++; currentUser.xp = 0; }
-    
-    // Boss framing
-    if (task.type === 'boss') {
-        if(!currentUser.achievements) currentUser.achievements = [];
-        currentUser.achievements.push({ text: task.text, date: new Date().toLocaleDateString() });
-    }
+    // Visual Feedback
+    const card = event.target.closest('.profile-card');
+    card.style.transform = "translateX(50px)";
+    card.style.opacity = "0";
 
-    // Remove from array
-    currentUser.tasks.splice(idx, 1);
-    
-    // Save state
-    await savePlayer(); 
-    refreshUI();
+    setTimeout(() => {
+        const task = currentUser.tasks[idx];
+        currentUser.xp += 25;
+        if (currentUser.xp >= 100) { currentUser.level++; currentUser.xp = 0; }
+        if (task.type === 'boss') {
+            if(!currentUser.achievements) currentUser.achievements = [];
+            currentUser.achievements.push({ text: task.text, date: new Date().toLocaleDateString() });
+        }
+        currentUser.tasks.splice(idx, 1);
+        refreshUI();
+        savePlayer();
+    }, 250);
 }
 
-// --- Hall of Fame ---
+// --- HALL OF FAME ---
 function renderHallOfFame() {
     const container = document.getElementById('ach-list');
     if (!container) return;
     container.innerHTML = "";
-    const achs = currentUser.achievements || [];
-    if (achs.length === 0) return;
-    achs.forEach((ach, i) => {
-        container.innerHTML += `<div class="boss-frame"><button class="delete-trophy" onclick="deleteTrophy(${i})"><i class="fas fa-trash"></i></button><i class="fas fa-dragon"></i><h3>${ach.text}</h3><p>Slayed on ${ach.date}</p></div>`;
+    (currentUser.achievements || []).forEach((ach, i) => {
+        container.innerHTML += `
+            <div class="boss-frame">
+                <button class="delete-trophy" onclick="deleteTrophy(${i})"><i class="fas fa-trash"></i></button>
+                <i class="fas fa-dragon" style="font-size: 2rem; color: var(--accent-gold); margin-bottom: 10px;"></i>
+                <h3>${ach.text}</h3>
+                <p>Slayed on ${ach.date}</p>
+            </div>`;
     });
 }
 
 async function deleteTrophy(i) {
     currentUser.achievements.splice(i, 1);
-    await savePlayer(); 
     renderHallOfFame();
+    savePlayer();
 }
 
-// --- Calendar ---
+// --- INSTANT CALENDAR ---
 function renderCalendar() {
     const grid = document.getElementById('calendarGrid');
     const monthLabel = document.getElementById('calendarMonth');
@@ -298,21 +291,20 @@ function renderCalendar() {
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
-    const markedDates = currentUser.markedDates || [];
-    for (let day = 1; day <= daysInMonth; day++) {
-        const dateStr = `${year}-${month + 1}-${day}`;
-        const isMarked = markedDates.includes(dateStr);
-        grid.innerHTML += `<div class="calendar-day ${isMarked ? 'marked' : ''}" onclick="toggleDateMark('${dateStr}')">${day}</div>`;
+    const marked = currentUser.markedDates || [];
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dStr = `${year}-${month + 1}-${d}`;
+        grid.innerHTML += `<div class="calendar-day ${marked.includes(dStr) ? 'marked' : ''}" onclick="toggleDateMark('${dStr}')">${d}</div>`;
     }
 }
 
-async function toggleDateMark(dateStr) {
+function toggleDateMark(dStr) {
     if (!currentUser.markedDates) currentUser.markedDates = [];
-    const idx = currentUser.markedDates.indexOf(dateStr);
+    const idx = currentUser.markedDates.indexOf(dStr);
     if (idx > -1) currentUser.markedDates.splice(idx, 1);
-    else currentUser.markedDates.push(dateStr);
-    await savePlayer();
+    else currentUser.markedDates.push(dStr);
     renderCalendar();
+    savePlayer();
 }
 
 function changeMonth(dir) {
@@ -320,30 +312,29 @@ function changeMonth(dir) {
     renderCalendar();
 }
 
-// --- Avatar ---
+// --- FAST AVATAR ---
 function uploadAvatar(input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
-        reader.onload = async function(e) {
-            const base64Image = e.target.result;
-            document.getElementById('imagePreview').src = base64Image;
-            currentUser.avatar = base64Image;
-            await savePlayer();
+        document.getElementById('imagePreview').style.filter = "blur(5px)";
+        reader.onload = function(e) {
+            const b64 = e.target.result;
+            document.getElementById('imagePreview').src = b64;
+            document.getElementById('imagePreview').style.filter = "blur(0)";
+            currentUser.avatar = b64;
+            savePlayer();
         };
         reader.readAsDataURL(input.files[0]);
     }
 }
 
-// --- Events ---
+// --- ADMIN CONTROL ---
 async function postEvent() {
     const title = document.getElementById('evTitle').value;
     const gold = parseInt(document.getElementById('evGold').value);
     if (!title || !gold || !db) return;
-    await db.collection("events").add({
-        title, gold, createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    document.getElementById('evTitle').value = "";
-    document.getElementById('evGold').value = "";
+    await db.collection("events").add({ title, gold, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    document.getElementById('evTitle').value = ""; document.getElementById('evGold').value = "";
 }
 
 function renderEvents() {
@@ -351,7 +342,7 @@ function renderEvents() {
     if(!list) return;
     list.innerHTML = "";
     if (globalEvents.length === 0) {
-        if (currentUser && currentUser.role !== 'admin') list.innerHTML = `<p class="empty-msg">Waiting for events...</p>`;
+        if (currentUser.role !== 'admin') list.innerHTML = `<p class="empty-msg">Waiting for events...</p>`;
         return;
     }
     globalEvents.forEach((ev) => {
@@ -359,17 +350,19 @@ function renderEvents() {
     });
 }
 
-async function claimEvent(id, reward) {
+function claimEvent(id, reward) {
     if (currentUser.role === 'admin') return;
     currentUser.gold += reward;
-    await savePlayer();
+    alert(`Reward Authorized: +${reward} Gold.`);
     refreshUI();
+    savePlayer();
 }
 
-// --- War ---
+// --- WAR ---
 async function requestWar() {
     currentUser.warAppeal = true;
-    await savePlayer(); refreshUI();
+    refreshUI();
+    savePlayer();
 }
 
 function renderApprovals(appeals = []) {
@@ -382,18 +375,18 @@ function renderApprovals(appeals = []) {
 }
 
 async function approveWar(leaderName, guildName) {
-    const commands = prompt(`Strategy for ${guildName}:`);
-    if (!commands || !db) return;
-    await db.collection("warRoom").doc("status").set({ activeWar: { guild: guildName, leader: leaderName, instructions: commands } });
+    const cmds = prompt(`Strategy for ${guildName}:`);
+    if (!cmds || !db) return;
+    await db.collection("warRoom").doc("status").set({ activeWar: { guild: guildName, leader: leaderName, instructions: cmds } });
     await db.collection("users").doc(leaderName).update({ warAppeal: false });
 }
 
 function renderBattlefield() {
     if (!activeWar) return;
-    const gName = document.getElementById('war-guild-name');
-    const gInst = document.getElementById('war-instructions-text');
-    if(gName) gName.innerText = activeWar.guild + " Front";
-    if(gInst) gInst.innerText = activeWar.instructions;
+    const n = document.getElementById('war-guild-name');
+    const i = document.getElementById('war-instructions-text');
+    if(n) n.innerText = activeWar.guild + " Front";
+    if(i) i.innerText = activeWar.instructions;
 }
 
 async function declareWinner() {
@@ -402,16 +395,17 @@ async function declareWinner() {
     const doc = await leaderRef.get();
     if (doc.exists) await leaderRef.update({ gold: doc.data().gold + 1000 });
     await db.collection("warRoom").doc("status").update({ activeWar: null });
-    alert("Victory Declared.");
+    alert("War Concluded.");
 }
 
 async function createGuild() {
-    const name = document.getElementById('newGName').value;
+    const name = document.getElementById('newGName').value.trim();
     if (currentUser.gold < 500) return alert("Need 500 Gold.");
     currentUser.gold -= 500;
     currentUser.guild = name;
     currentUser.role = 'leader';
-    await savePlayer(); refreshUI();
+    refreshUI();
+    savePlayer();
 }
 
 function showContent(id, el) {

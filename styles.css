@@ -361,3 +361,46 @@ input { flex: 1; background: var(--bg-dark); border: 1px solid #334155; padding:
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .admin-only, .leader-only { display: none; }
+
+/* --- Smoothness & Motion --- */
+
+/* Smooth Bar filling */
+.fill {
+    transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Task Card Entry Animation */
+@keyframes slideInUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.profile-card {
+    animation: slideInUp 0.3s ease-out;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.profile-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+}
+
+/* Task Completion "Poof" Animation */
+.task-exit {
+    transform: translateX(50px) scale(0.9);
+    opacity: 0 !important;
+    transition: all 0.3s ease-in;
+}
+
+/* Calendar Click Feedback */
+.calendar-day {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.calendar-day:active {
+    transform: scale(0.8);
+}
+
+/* Instant Preview for Avatar */
+#imagePreview {
+    transition: filter 0.3s ease;
+}
