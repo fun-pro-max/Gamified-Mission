@@ -1,12 +1,13 @@
 /**
- * QUESTLOG SUPREME - FINAL VERSION
- * Features: High-Speed Sync, Identity-Lock, Tactical Warfare, Interactive Calendar
+ * QUESTLOG SUPREME - PERSISTENCE FIXED
+ * Safety Logic: "Safety Lock" prevents overwriting cloud data with empty local data.
  */
 
 // 1. Configuration & Global State
 let currentNavDate = new Date();
 const ADMIN_CRED = { user: 'Gourav', pass: 'admin' };
 const K_SESSION = 'realm_active_session_v5';
+let isDataLoaded = false; // Safety Lock
 
 const firebaseConfig = {
     apiKey: "AIzaSyDhHTiL8iTkoS7izGOneAY9W8w_aZVApAk",
@@ -43,24 +44,26 @@ window.onload = async () => {
 }
 
 async function autoLogin(name) {
-    if (name === ADMIN_CRED.user) {
-        const adminDoc = await db.collection("users").doc("admin_global").get();
-        let adminData = createAdminSession();
-        if (adminDoc.exists) {
-            adminData = { ...adminData, ...adminDoc.data() };
-        }
-        login(adminData);
-    } else if (db) {
-        try {
+    try {
+        if (name === ADMIN_CRED.user) {
+            const adminDoc = await db.collection("users").doc("admin_global").get();
+            let adminData = createAdminSession();
+            if (adminDoc.exists) {
+                // Merge cloud tasks/avatar/dates into session
+                adminData = { ...adminData, ...adminDoc.data() };
+            }
+            login(adminData);
+        } else if (db) {
             const doc = await db.collection("users").doc(name).get();
             if (doc.exists) {
                 login({ name, ...doc.data() });
             } else {
                 document.getElementById('auth-overlay').style.display = 'flex';
             }
-        } catch (e) {
-            document.getElementById('auth-overlay').style.display = 'flex';
         }
+    } catch (e) {
+        console.error("AutoLogin Error:", e);
+        document.getElementById('auth-overlay').style.display = 'flex';
     }
 }
 
@@ -68,7 +71,6 @@ async function autoLogin(name) {
 async function handleAuth() {
     const name = document.getElementById('username').value.trim();
     const pass = document.getElementById('password').value.trim();
-
     if (!name || !pass) return;
 
     if (name === ADMIN_CRED.user && pass === ADMIN_CRED.pass) {
@@ -89,7 +91,7 @@ async function handleAuth() {
             if (doc.data().pass === pass) {
                 login({ name, ...doc.data() });
             } else {
-                alert("Incorrect Passkey.");
+                alert("Passkey Incorrect.");
             }
         } else {
             const newUser = { 
@@ -109,7 +111,8 @@ function createAdminSession() {
 
 function login(user) {
     currentUser = user;
-    if (!currentUser.tasks) currentUser.tasks = [];
+    if (!currentUser.tasks) currentUser.tasks = []; // Ensure task array exists
+    
     localStorage.setItem(K_SESSION, user.name);
     document.getElementById('auth-overlay').style.display = 'none';
     
@@ -117,13 +120,15 @@ function login(user) {
     const idTag = document.getElementById('sidebar-id');
     if(idTag) idTag.innerText = `ID: ${user.name} // ${user.role}`;
     
+    isDataLoaded = true; // UNLOCK SAVING
     refreshUI();
     renderCalendar();
 }
 
-// --- FAST CLOUD SYNC (Background) ---
+// --- CLOUD SYNC (Safety Locked) ---
 async function savePlayer() {
-    if (!db || !currentUser) return;
+    if (!db || !currentUser || !isDataLoaded) return; // Don't save if data isn't loaded yet
+
     const docId = currentUser.role === 'admin' ? "admin_global" : currentUser.name;
     const data = (currentUser.role === 'admin') ? {
         avatar: currentUser.avatar || null,
@@ -159,7 +164,7 @@ function startGlobalListeners() {
     });
 }
 
-// --- UI ENGINE (Optimized for low response time) ---
+// --- UI ENGINE ---
 function refreshUI() {
     if (!currentUser) return;
     requestAnimationFrame(() => {
@@ -201,22 +206,18 @@ function refreshUI() {
     });
 }
 
-// --- SNAPPY TASK ACTIONS ---
+// --- TASK ACTIONS ---
 function addTask(type) {
     const inputId = type === 'training' ? 'tIn' : (type === 'quests' ? 'qIn' : 'bIn');
     const input = document.getElementById(inputId);
     const val = input.value.trim();
     if (!val) return;
 
-    // 1. Instant Local Update
     currentUser.tasks.push({ id: Date.now(), text: val, type });
     input.value = "";
     
-    // 2. Instant Render
-    renderTasks();
-    
-    // 3. Background Save
-    savePlayer();
+    renderTasks(); // Instant local update
+    savePlayer(); // Sync to cloud in background
 }
 
 function renderTasks() {
@@ -226,7 +227,7 @@ function renderTasks() {
         container.innerHTML = "";
         (currentUser.tasks || []).filter(t => t.type === type).forEach(t => {
             container.innerHTML += `
-                <div class="profile-card" style="padding:15px; margin-bottom:10px; animation: slideInUp 0.3s ease-out;">
+                <div class="profile-card" style="padding:15px; margin-bottom:10px; animation: slideInUp 0.3s ease-out; gap: 15px;">
                     <span style="flex:1; font-weight:600;">${t.text}</span>
                     <button class="complete-btn" onclick="finishTask(${t.id}, event)">Finish</button>
                 </div>`;
@@ -252,6 +253,7 @@ function finishTask(id, event) {
             currentUser.achievements.push({ text: task.text, date: new Date().toLocaleDateString() });
         }
         currentUser.tasks.splice(idx, 1);
+        
         refreshUI();
         savePlayer();
     }, 250);
@@ -273,13 +275,13 @@ function renderHallOfFame() {
     });
 }
 
-async function deleteTrophy(i) {
+function deleteTrophy(i) {
     currentUser.achievements.splice(i, 1);
     renderHallOfFame();
     savePlayer();
 }
 
-// --- INSTANT CALENDAR ---
+// --- CALENDAR ---
 function renderCalendar() {
     const grid = document.getElementById('calendarGrid');
     const monthLabel = document.getElementById('calendarMonth');
@@ -312,7 +314,7 @@ function changeMonth(dir) {
     renderCalendar();
 }
 
-// --- FAST AVATAR ---
+// --- AVATAR ---
 function uploadAvatar(input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
@@ -328,7 +330,7 @@ function uploadAvatar(input) {
     }
 }
 
-// --- ADMIN CONTROL ---
+// --- ADMIN EVENTS ---
 async function postEvent() {
     const title = document.getElementById('evTitle').value;
     const gold = parseInt(document.getElementById('evGold').value);
@@ -342,7 +344,7 @@ function renderEvents() {
     if(!list) return;
     list.innerHTML = "";
     if (globalEvents.length === 0) {
-        if (currentUser.role !== 'admin') list.innerHTML = `<p class="empty-msg">Waiting for events...</p>`;
+        if (currentUser && currentUser.role !== 'admin') list.innerHTML = `<p class="empty-msg">Waiting for events...</p>`;
         return;
     }
     globalEvents.forEach((ev) => {
