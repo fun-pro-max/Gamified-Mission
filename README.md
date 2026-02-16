@@ -72,7 +72,7 @@ A professional, aligned info stack featuring:
 ### 2. Firebase Configuration
 Update the `firebaseConfig` object in `script.js` with your project credentials:
 
-```javascript
+javascript
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_PROJECT.firebaseapp.com",
@@ -81,3 +81,47 @@ const firebaseConfig = {
   messagingSenderId: "...",
   appId: "..."
 };
+MIT License
+
+Copyright (c) 2026 YOUR_NAME
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, subject to the following conditions:
+
+1. The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
+
+2. The Software is provided "as is", without warranty of any kind, express or
+   implied, including but not limited to the warranties of merchantability,
+   fitness for a particular purpose and noninfringement.
+
+3. In no event shall the authors or copyright holders be liable for any claim,
+   damages or other liability, whether in an action of contract, tort or otherwise,
+   arising from, out of or in connection with the Software or the use or other
+   dealings in the Software.
+
+------------------------------------------------------------
+
+PROJECT DISCLAIMER
+
+This project is provided for educational, experimental, and demonstration purposes.
+It may not be production-ready and is shared to showcase concepts, learning progress,
+and development practices.
+
+The author makes no guarantees regarding:
+- Security
+- Performance at scale
+- Compatibility with all environments
+- Suitability for commercial deployment
+
+Anyone choosing to use, modify, or deploy this code does so at their own risk.
+It is recommended to review, test, and adapt the code before using it in any
+critical or production environment.
+
+------------------------------------------------------------
+
+By using this software, you acknowledge that it is an open-source learning project
+and accept all responsibility for how it is used.
