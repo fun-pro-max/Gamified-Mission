@@ -81,3 +81,28 @@ const firebaseConfig = {
   messagingSenderId: "...",
   appId: "..."
 };
+
+
+------------------------------------------------------------
+
+PROJECT DISCLAIMER
+
+This project is provided for educational, experimental, and demonstration purposes.
+It may not be production-ready and is shared to showcase concepts, learning progress,
+and development practices.
+
+The author makes no guarantees regarding:
+- Security
+- Performance at scale
+- Compatibility with all environments
+- Suitability for commercial deployment
+
+Anyone choosing to use, modify, or deploy this code does so at their own risk.
+It is recommended to review, test, and adapt the code before using it in any
+critical or production environment.
+
+------------------------------------------------------------
+
+By using this software, you acknowledge that it is an open-source learning project
+and accept all responsibility for how it is used.
+
