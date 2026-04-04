@@ -1,6 +1,5 @@
 /**
  * QUESTLOG MASTER SCRIPT - HIGH COMMAND EDITION
- * Fix: Permanent Event Deletion for Admin
  */
 
 // 1. Firebase Config
@@ -16,38 +15,29 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// 2. State & Admin
+// 2. Constants & State
 const ADMIN_CRED = { user: 'Gourav', pass: 'admin' };
 const K_SESSION = 'realm_identity_eternal_final';
-let currentUser = null, globalEvents = [], currentNavDate = new Date(), isDataLoaded = false;
+let currentUser = null, globalEvents = [], activeWar = null, currentNavDate = new Date(), isDataLoaded = false;
 let currentClaimData = null, selectedDateStr = null;
 
-// --- ALCHEMIST MASTER QUIZ POOL ---
+// --- MASTER QUIZ POOL ---
 const masterQuizPool = [
     {q: "Which metal is the Alchemist's ultimate goal?", a: ["Silver","Gold","Iron"], c: 1},
     {q: "A fortification built upon a hill is a?", a: ["Motte","Keep","Dungeon"], c: 0},
     {q: "Which metal rusts when kissed by air?", a: ["Gold","Iron","Lead"], c: 1},
     {q: "The code of a Knight is known as?", a: ["Fealty","Heraldry","Chivalry"], c: 2},
-    {q: "Which weapon was used to launch stones at walls?", a: ["Ballista","Trebuchet","Longbow"], c: 1},
-    {q: "An apprentice alchemist is often called a?", a: ["Squire","Neophyte","Page"], c: 1},
+    {q: "Alchemy's 'Aqua Regia' can dissolve which metal?", a: ["Iron","Silver","Gold"], c: 2},
     {q: "Ancient paper made from skins is called?", a: ["Parchment","Papyrus","Scroll"], c: 0},
     {q: "A defensive ditch around a castle is a?", a: ["Moat","Trench","Canyon"], c: 0},
-    {q: "Alchemy's 'Aqua Regia' can dissolve which metal?", a: ["Iron","Silver","Gold"], c: 2},
-    {q: "A standard unit of gold purity is the?", a: ["Ounce","Karat","Ingot"], c: 1},
-    {q: "What bird is the symbol of alchemy's final stage?", a: ["Raven","Phoenix","Eagle"], c: 1},
-    {q: "Which substance was called 'Quick-Silver'?", a: ["Silver","Mercury","Lead"], c: 1},
-    {q: "What was used to seal secret scrolls?", a: ["Lead","Wax","Clay"], c: 1},
-    {q: "A 'Great Sword' held with two hands is a?", a: ["Rapier","Claymore","Dagger"], c: 1},
-    {q: "The study of coat of arms and lineages is?", a: ["Heraldry","Chivalry","Fealty"], c: 0},
-    {q: "The inner stronghold of a castle is the?", a: ["Keep","Bailey","Turret"], c: 0},
-    {q: "What color is the 'Philosopher's Stone'?", a: ["Gold","Red","Emerald"], c: 1},
     {q: "Which stars guided sailors in the North?", a: ["Orion","Polaris","Sirius"], c: 1},
-    {q: "What is the primary ingredient in medieval ink?", a: ["Oak Gall","Berry Juice","Charcoal"], c: 0},
-    {q: "A knight's servant and student is a?", a: ["Peasant","Squire","Serf"], c: 1}
+    {q: "What Bird is the symbol of alchemy's final stage?", a: ["Raven","Phoenix","Eagle"], c: 1},
+    {q: "The inner stronghold of a castle is the?", a: ["Keep","Bailey","Turret"], c: 0}
 ];
 let activeQuizSet = [], quizIdx = 0, quizScore = 0;
+let archSeq = [], userSeq = [], archRound = 1, isArcherPlaying = false;
 
-// --- INITIALIZATION FLOW ---
+// --- 1. INITIALIZATION ---
 window.onload = async () => {
     const savedID = localStorage.getItem(K_SESSION);
     startGlobalListeners();
@@ -76,7 +66,7 @@ async function handleAuth() {
     const ref = db.collection("users").doc(name), doc = await ref.get();
     if (doc.exists) {
         if (doc.data().pass === pass) login({ name, ...doc.data() });
-        else alert("Passkey Incorrect.");
+        else alert("Incorrect Passkey.");
     } else {
         const newUser = { pass, role: 'player', gold: 100, level: 1, xp: 0, guild: null, tasks: [], achievements: [], warAppeal: false, markedDates: [], avatar: null };
         await ref.set(newUser); login({ name, ...newUser });
@@ -95,22 +85,20 @@ function login(user) {
 async function saveState() {
     if (!db || !currentUser || !isDataLoaded) return;
     const docId = (currentUser.role === 'admin') ? "admin_global" : currentUser.name;
-    const data = { gold: currentUser.gold, xp: currentUser.xp, level: currentUser.level, role: currentUser.role, tasks: currentUser.tasks || [], achievements: currentUser.achievements || [], markedDates: currentUser.markedDates || [], avatar: currentUser.avatar };
+    const data = { gold: currentUser.gold, xp: currentUser.xp, level: currentUser.level, guild: currentUser.guild || null, role: currentUser.role, tasks: currentUser.tasks || [], achievements: currentUser.achievements || [], warAppeal: currentUser.warAppeal || false, markedDates: currentUser.markedDates || [], avatar: currentUser.avatar || null };
     await db.collection("users").doc(docId).set(data, { merge: true });
 }
 
-// --- CORE UI & LISTENERS ---
+// --- 2. UI & LISTENERS ---
 function startGlobalListeners() {
     db.collection("events").orderBy("createdAt", "desc").onSnapshot(snap => {
         globalEvents = snap.docs.map(d => ({id: d.id, ...d.data()}));
         renderEvents();
     });
     db.collection("submissions").onSnapshot(() => { if(currentUser?.role === 'admin') syncApprovals(); });
-}
-
-async function syncApprovals() {
-    const subs = (await db.collection("submissions").get()).docs.map(d => ({id: d.id, ...d.data()}));
-    renderApprovals(subs);
+    db.collection("warRoom").doc("status").onSnapshot(doc => {
+        if (doc.exists) { activeWar = doc.data().activeWar || null; if(currentUser) refreshUI(); }
+    });
 }
 
 function refreshUI() {
@@ -118,7 +106,13 @@ function refreshUI() {
     requestAnimationFrame(() => {
         const isAdmin = currentUser.role === 'admin';
         document.getElementById('admin-tab-link').style.display = isAdmin ? 'flex' : 'none';
+        document.getElementById('guild-tab-link').style.display = isAdmin ? 'none' : 'flex';
+        
+        let canSeeWar = (isAdmin && activeWar) || (activeWar && currentUser.guild === activeWar.guild);
+        document.getElementById('war-front-link').style.display = canSeeWar ? 'flex' : 'none';
+
         document.querySelectorAll('.admin-only').forEach(e => e.style.display = isAdmin ? 'block' : 'none');
+        document.querySelectorAll('.leader-only').forEach(e => e.style.display = (currentUser.role === 'leader') ? 'block' : 'none');
 
         document.getElementById('heroName').innerText = currentUser.name;
         document.getElementById('goldCount').innerText = currentUser.gold;
@@ -129,11 +123,22 @@ function refreshUI() {
         const titles = ["Novice", "Squire", "Knight", "Veteran", "Hero", "Legend", "Demigod"];
         document.getElementById('rankTitle').innerText = titles[Math.min(Math.floor(currentUser.level / 5), 6)] + " Adventurer";
 
+        if (currentUser.guild) {
+            document.getElementById('guild-create-zone').style.display = 'none';
+            document.getElementById('active-guild').style.display = 'block';
+            document.getElementById('gTitle').innerText = currentUser.guild;
+            document.getElementById('gInitial').innerText = currentUser.guild[0].toUpperCase();
+            if (currentUser.warAppeal) document.getElementById('request-war-btn').style.display = 'none';
+        } else {
+            document.getElementById('guild-create-zone').style.display = 'block';
+            document.getElementById('active-guild').style.display = 'none';
+        }
         renderBosses(); renderHallOfFame(); renderCalendar(); renderEvents();
+        if (activeWar) renderBattlefield();
     });
 }
 
-// --- ALCHEMIST ---
+// --- 3. ALCHEMIST ---
 function startQuiz() { 
     activeQuizSet = [...masterQuizPool].sort(() => Math.random() - 0.5).slice(0, 10);
     quizIdx = 0; quizScore = 0; 
@@ -152,202 +157,136 @@ async function ansQ(i) {
     quizIdx++;
     if(quizIdx < 10) showQ();
     else {
-        if(quizScore >= 8) { alert("Exceptional Mind! +25 XP"); await grantXP(); }
-        else { alert(`Try again. Score: ${quizScore}/10`); }
+        if(quizScore >= 8) { alert("Wise mind! +25 XP"); await grantXP(); }
+        else { alert(`Insufficient wisdom. Score: ${quizScore}/10`); }
         document.getElementById('quiz-play').style.display = 'none'; document.getElementById('quiz-start').style.display = 'block';
     }
 }
 
-// --- ARCHER ---
-// --- ARCHER RANGE 2.0 ENGINE ---
-let archSeq = [];
-let userSeq = [];
-let archRound = 1;
-let isSequencePlaying = false;
-
+// --- 4. ARCHER RANGE ---
 async function startArcher() { 
     archRound = 1; 
     document.getElementById('archer-start').style.display = 'none'; 
     document.getElementById('archer-play').style.display = 'block'; 
     await nextRound(); 
 }
-
 async function nextRound() {
-    userSeq = [];
-    archSeq = [];
-    isSequencePlaying = true;
-    
-    // UI Feedback
+    userSeq = []; archSeq = []; isArcherPlaying = true;
     document.getElementById('archer-r').innerText = `Trial ${archRound} of 3`;
-    document.getElementById('archer-status').innerText = "WATCH CAREFULLY...";
+    document.getElementById('archer-status').innerText = "WATCH...";
     document.getElementById('rune-grid').classList.add('locked');
-
-    // 1. Generate Sequence (gets longer every round)
-    const seqLength = archRound + 2; 
-    for(let i=0; i < seqLength; i++) {
-        archSeq.push(Math.floor(Math.random() * 4));
-    }
-
-    // 2. Play Sequence
-    await sleep(1000);
+    for(let i=0; i<archRound+2; i++) archSeq.push(Math.floor(Math.random()*4));
     const stones = document.querySelectorAll('.rune-stone');
-    
     for (let id of archSeq) {
+        await new Promise(r => setTimeout(r, 600));
         stones[id].classList.add('active');
-        await sleep(600); // Highlight time
+        await new Promise(r => setTimeout(r, 500));
         stones[id].classList.remove('active');
-        await sleep(300); // Gap between flashes
     }
-
-    // 3. Enable User Input
-    isSequencePlaying = false;
+    isArcherPlaying = false;
     document.getElementById('archer-status').innerText = "YOUR TURN!";
     document.getElementById('rune-grid').classList.remove('locked');
     enableArcherInput();
 }
-
 function enableArcherInput() {
-    const stones = document.querySelectorAll('.rune-stone');
-    stones.forEach(s => {
-        s.onclick = async function() {
-            if(isSequencePlaying) return; // Safety check
-
-            const id = parseInt(this.dataset.id);
-            userSeq.push(id);
-            
-            // Visual feedback for click
-            this.classList.add('active');
-            setTimeout(() => this.classList.remove('active'), 200);
-
-            // Check correctness
-            if(userSeq[userSeq.length-1] !== archSeq[userSeq.length-1]) {
-                document.getElementById('archer-status').innerText = "MISSED THE MARK!";
-                alert("The elements rejected your focus. Start the trial again.");
-                resetArcher();
-                return;
-            }
-
-            // Check if finished sequence
-            if(userSeq.length === archSeq.length) {
-                if(archRound < 3) {
-                    archRound++;
-                    document.getElementById('archer-status').innerText = "BULLSEYE!";
-                    await sleep(1000);
-                    nextRound();
-                } else {
-                    document.getElementById('archer-status').innerText = "MASTER ARCHER!";
-                    alert("The Four Elements have acknowledged your focus! +25 XP");
-                    resetArcher();
-                    await grantXP(); // Shared function to add XP/Level Up
-                }
-            }
-        };
+    document.querySelectorAll('.rune-stone').forEach(s => s.onclick = async function() {
+        if(isArcherPlaying) return;
+        const id = parseInt(this.dataset.id); userSeq.push(id);
+        this.classList.add('active'); setTimeout(()=>this.classList.remove('active'), 200);
+        if(userSeq[userSeq.length-1] !== archSeq[userSeq.length-1]) { alert("Missed!"); resetArcher(); return; }
+        if(userSeq.length === archSeq.length) {
+            if(archRound < 3) { archRound++; setTimeout(nextRound, 1000); }
+            else { alert("Bullseye! +25 XP"); resetArcher(); await grantXP(); }
+        }
     });
 }
+function resetArcher() { document.getElementById('archer-play').style.display = 'none'; document.getElementById('archer-start').style.display = 'block'; }
+async function grantXP() { currentUser.xp += 25; if(currentUser.xp>=100){currentUser.level++; currentUser.xp=0;} refreshUI(); await saveState(); }
 
-// Utility function for timing
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function resetArcher() {
-    isSequencePlaying = false;
-    document.getElementById('archer-play').style.display = 'none'; 
-    document.getElementById('archer-start').style.display = 'block'; 
-    // Clean up listeners
-    document.querySelectorAll('.rune-stone').forEach(s => s.onclick = null);
-}
-
-// --- EVENT SYSTEM (FIXED PERMANENT DELETE) ---
+// --- 5. EVENTS & APPROVALS ---
 async function postEvent() {
     const t = document.getElementById('evTitle').value, g = parseInt(document.getElementById('evGold').value);
     if (!t || !g) return;
     await db.collection("events").add({ title: t, gold: g, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
     document.getElementById('evTitle').value = ""; document.getElementById('evGold').value = "";
 }
-
-// --- UPDATED AGGRESSIVE DELETION ---
 async function deleteEvent(id) { 
-    if (currentUser.role !== 'admin') {
-        alert("Only the Creator holds the power to strike down a proclamation.");
-        return;
+    if (currentUser.role !== 'admin') return;
+    if(confirm("Creator, permanently strike this proclamation?")) {
+        const el = document.querySelector(`[data-ev-id="${id}"]`);
+        if(el) el.style.display = 'none';
+        await db.collection("events").doc(id).delete();
     }
-
-    if(confirm("Creator, shall this event be erased from the scrolls of history forever?")) {
-        try {
-            // 1. Remove from local memory immediately (Optimistic UI)
-            globalEvents = globalEvents.filter(ev => ev.id !== id);
-            
-            // 2. Clear the UI list immediately so it disappears before the server responds
-            const list = document.getElementById('event-list');
-            const itemToRemove = list.querySelector(`[data-event-id="${id}"]`);
-            if (itemToRemove) itemToRemove.style.display = 'none';
-
-            // 3. Send the execution command to the Cloud
-            await db.collection("events").doc(id).delete();
-            
-            console.log("The proclamation has been eradicated.");
-        } catch (error) {
-            console.error("The record resisted deletion:", error);
-            alert("Connection error: The database resisted the strike. Check your Kingdom's Firestore Rules.");
-            // Refresh UI to show the item again since it failed to delete on server
-            renderEvents();
-        }
-    } 
 }
-
 function renderEvents() {
-    const list = document.getElementById('event-list'); 
-    if(!list) return; 
-    list.innerHTML = "";
-    
-    const isAdmin = (currentUser?.role === 'admin');
-    
-    if (globalEvents.length === 0 && !isAdmin) {
-        list.innerHTML = "<p class='small-label' style='text-align:center'>No proclamations in the Kingdom.</p>";
-        return;
-    }
-
+    const list = document.getElementById('event-list'); if(!list) return; list.innerHTML = "";
+    const isAdmin = currentUser?.role === 'admin';
     globalEvents.forEach(ev => {
-        // We add a data-attribute so the delete function can hide it instantly
-        list.innerHTML += `
-            <div class="event-item" data-event-id="${ev.id}">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h4 style="margin:0;">${ev.title}</h4>
-                    ${isAdmin ? `<i class="fas fa-trash-alt" style="color:var(--danger); cursor:pointer; font-size:0.85rem;" onclick="deleteEvent('${ev.id}')"></i>` : ''}
-                </div>
-                <p class="gold-reward" style="margin: 5px 0;">+ ${ev.gold}g</p>
-                ${!isAdmin ? `<button class="medieval-btn mini wide" onclick="openProof('${ev.id}','${ev.title}',${ev.gold})">Submit Proof</button>` : ''}
-            </div>`;
+        list.innerHTML += `<div class="event-item" data-ev-id="${ev.id}">
+            <div style="display:flex; justify-content:space-between"><h4>${ev.title}</h4>${isAdmin ? `<i class="fas fa-trash-alt" style="color:var(--danger); cursor:pointer" onclick="deleteEvent('${ev.id}')"></i>` : ''}</div>
+            <p class="gold-reward" style="margin:5px 0;">+ ${ev.gold}g</p>
+            ${!isAdmin ? `<button class="medieval-btn mini wide" onclick="openProof('${ev.id}','${ev.title}',${ev.gold})">Proof</button>` : ''}
+        </div>`;
     });
 }
-
-// --- APPROVALS ---
 function openProof(id, title, gold) { currentClaimData = {id, title, gold}; document.getElementById('evidenceUpload').click(); }
 async function handleProofUpload(e) {
     if (!e.target.files[0]) return;
     const reader = new FileReader();
     reader.onload = async (event) => {
         await db.collection("submissions").add({ user: currentUser.name, title: currentClaimData.title, reward: currentClaimData.gold, proof: event.target.result, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-        alert("Proof sent for approval.");
+        alert("Sent for approval.");
     };
     reader.readAsDataURL(e.target.files[0]);
 }
 async function syncApprovals() {
     const subs = (await db.collection("submissions").get()).docs.map(d => ({id: d.id, ...d.data()}));
+    const wars = (await db.collection("users").where("warAppeal", "==", true).get()).docs.map(d => ({ name: d.id, ...d.data() }));
     const list = document.getElementById('approval-list'); if(!list) return;
-    list.innerHTML = (subs.length === 0) ? "<p style='text-align:center'>No appeals found.</p>" : "";
+    list.innerHTML = (subs.length === 0 && wars.length === 0) ? "<p style='text-align:center'>Quiet...</p>" : "";
     subs.forEach(s => {
         list.innerHTML += `<div class="profile-card"><h3>${s.user}: ${s.title}</h3><img src="${s.proof}" style="width:100%; border-radius:4px; margin:10px 0"><button class="medieval-btn" onclick="approveClaim('${s.id}','${s.user}',${s.reward})">Grant Gold</button></div>`;
+    });
+    wars.forEach(w => {
+        list.innerHTML += `<div class="profile-card"><h3>War Appeal: ${w.guild}</h3><button class="medieval-btn" onclick="approveWar('${w.name}','${w.guild}')">Sanction War</button></div>`;
     });
 }
 async function approveClaim(id, user, gold) {
     const ref = db.collection("users").doc(user), doc = await ref.get();
     if(doc.exists) await ref.update({ gold: (doc.data().gold || 0) + gold });
-    await db.collection("submissions").doc(id).delete(); alert("Gold granted.");
+    await db.collection("submissions").doc(id).delete();
 }
 
-// --- CORE ---
+// --- 6. GUILD & WAR ---
+async function createGuild() {
+    const n = document.getElementById('newGName').value.trim();
+    if (currentUser.level < 10) return alert("Level 10 required.");
+    if (currentUser.gold < 1000) return alert("1,000 Gold required.");
+    currentUser.gold -= 1000; currentUser.guild = n; currentUser.role = 'leader';
+    await saveState(); refreshUI();
+}
+async function requestWar() { currentUser.warAppeal = true; await saveState(); refreshUI(); }
+async function approveWar(leader, guild) {
+    const type = prompt("Enter Trial: 'archer' or 'alchemist'");
+    const cmds = prompt("Strategy:");
+    await db.collection("warRoom").doc("status").set({ activeWar: { guild, leader, instructions: cmds, type } });
+    await db.collection("users").doc(leader).update({ warAppeal: false });
+}
+function renderBattlefield() {
+    if (!activeWar) return;
+    document.getElementById('war-guild-name').innerText = `${activeWar.guild} : Trial of ${activeWar.type}`;
+    document.getElementById('war-instructions-text').innerText = activeWar.instructions;
+}
+async function declareWinner() {
+    if (!activeWar) return;
+    const ref = db.collection("users").doc(activeWar.leader);
+    const doc = await ref.get();
+    if (doc.exists) await ref.update({ gold: (doc.data().gold || 0) + 2000 });
+    await db.collection("warRoom").doc("status").update({ activeWar: null });
+    alert("Victory Declared.");
+}
+
+// --- 7. CORE MODULES ---
 function addTask(type) {
     const val = document.getElementById('bIn').value.trim();
     if(!val) return; currentUser.tasks.push({id:Date.now(), text:val, type:'boss'});
@@ -367,17 +306,20 @@ function renderCalendar() {
     document.getElementById('calendarMonth').innerText = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(currentNavDate);
     const start = new Date(y, m, 1).getDay(), end = new Date(y, m+1, 0).getDate();
     for(let i=0; i<start; i++) grid.innerHTML += `<div></div>`;
+    const marked = currentUser.markedDates || [];
     for(let d=1; d<=end; d++) {
         const dStr = `${y}-${m+1}-${d}`;
-        const has = (currentUser.markedDates || []).includes(dStr);
-        grid.innerHTML += `<div class="calendar-day ${has ? 'marked' : ''}" onclick="toggleDate('${dStr}')">${d}</div>`;
+        const hasNote = (currentUser.markedDates || []).find(x => x.date === dStr);
+        grid.innerHTML += `<div class="calendar-day ${hasNote ? 'marked' : ''}" onclick="openNote('${dStr}')">${d}</div>`;
     }
 }
-async function toggleDate(d) {
+function openNote(d) { selectedDateStr = d; document.getElementById('calendar-modal').style.display='grid'; }
+function closeCalendarModal() { document.getElementById('calendar-modal').style.display='none'; }
+async function saveDayNote() {
+    const n = document.getElementById('day-note-input').value.trim();
     if(!currentUser.markedDates) currentUser.markedDates = [];
-    const idx = currentUser.markedDates.indexOf(d);
-    if(idx > -1) currentUser.markedDates.splice(idx, 1); else currentUser.markedDates.push(d);
-    renderCalendar(); await saveState();
+    currentUser.markedDates.push({date: selectedDateStr, note: n});
+    renderCalendar(); await saveState(); closeCalendarModal();
 }
 function changeMonth(d) { currentNavDate.setMonth(currentNavDate.getMonth() + d); renderCalendar(); }
 

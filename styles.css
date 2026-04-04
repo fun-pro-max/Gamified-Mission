@@ -16,27 +16,25 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg-dark); color: va
 h1, h2, h3, .brand { font-family: 'Cinzel', serif; color: var(--gold); letter-spacing: 1px; }
 
 /* SIDEBAR */
-.sidebar { width: 260px; background: var(--sidebar-bg); display: flex; flex-direction: column; border-right: 2px solid var(--gold); }
-.brand { padding: 30px 20px; font-size: 1.5rem; text-align: center; }
+.sidebar { width: 260px; background: var(--sidebar-bg); display: flex; flex-direction: column; border-right: 2px solid var(--gold); z-index: 100; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+.brand { padding: 30px 20px; font-size: 1.5rem; text-align: center; border-bottom: 1px solid rgba(212,175,55,0.2); }
 .tab { padding: 15px 25px; cursor: pointer; color: var(--text-dim); display: flex; align-items: center; gap: 15px; transition: 0.3s; }
 .tab.active { background: rgba(212, 175, 55, 0.1); color: var(--gold); border-left: 4px solid var(--gold); }
 .sidebar-id-tag { margin-top: auto; padding: 20px; font-size: 0.7rem; color: var(--gold); opacity: 0.6; border-top: 1px solid var(--glass); }
 
 /* MAIN AREA */
 .main-content { flex: 1; padding: 40px; overflow-y: auto; }
-.content { display: none; }
+.content { display: none; animation: fadeIn 0.4s ease-out; }
 .content.active { display: block; }
 .dashboard-flex { display: flex; gap: 30px; flex-wrap: wrap; }
 .profile-section { flex: 2; min-width: 350px; }
 
 /* PASSPORT PROFILE (ALIGNED) */
 .profile-card { background: var(--card-bg); padding: 30px; border-radius: 15px; border: 1px solid var(--glass); margin-bottom: 25px; }
-.hero-profile-layout { display: flex; align-items: flex-start; gap: 30px; }
+.hero-profile-layout { display: flex; align-items: flex-start; gap: 30px; border-top: 4px solid var(--gold); }
 .avatar-container { width: 140px; height: 170px; border: 3px solid var(--gold); border-radius: 8px; overflow: hidden; position: relative; flex-shrink: 0; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
 .avatar-container img { width: 100%; height: 100%; object-fit: cover; }
-
 .hero-info-stack { flex: 1; display: flex; flex-direction: column; gap: 8px; }
-.hero-info-stack h2 { font-size: 2rem; margin-bottom: 5px; color: var(--text-main); }
 .info-row { display: flex; align-items: center; gap: 12px; font-size: 1rem; }
 .info-label { color: var(--text-dim); min-width: 60px; font-size: 0.85rem; }
 .info-value { color: var(--gold); font-family: 'MedievalSharp'; font-size: 1.2rem; }
@@ -47,13 +45,33 @@ h1, h2, h3, .brand { font-family: 'Cinzel', serif; color: var(--gold); letter-sp
 .xp-bar-outer { width: 100%; height: 10px; background: #000; border-radius: 10px; overflow: hidden; }
 .xp-bar-fill { height: 100%; background: linear-gradient(90deg, var(--gold), #fff); transition: width 0.6s ease; box-shadow: 0 0 10px var(--gold); }
 
-/* CALENDAR GRID */
+/* CALENDAR (FIXED GRID) */
 .calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); width: 100%; text-align: center; margin-bottom: 10px; color: var(--gold); font-weight: bold; }
 .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; width: 100%; }
-.calendar-day { aspect-ratio: 1/1; display: grid; place-items: center; background: rgba(0,0,0,0.3); border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: 0.2s; border: 1px solid transparent; }
-.calendar-day.marked { background: rgba(212, 175, 55, 0.3); border-color: var(--gold); }
+.calendar-day { aspect-ratio: 1/1; display: grid; place-items: center; background: rgba(0,0,0,0.3); border-radius: 4px; cursor: pointer; font-size: 0.85rem; position: relative; }
+.calendar-day.marked { background: rgba(212, 175, 55, 0.3); border: 1px solid var(--gold); }
+.calendar-day.has-note::after { content: ''; position: absolute; top: 5px; right: 5px; width: 6px; height: 6px; background: var(--gold); border-radius: 50%; }
 
-/* AUTH & INPUTS */
+/* GAMES UI */
+.game-box { text-align: center; }
+.quiz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+.quiz-option { background: var(--sidebar-bg); border: 2px solid var(--gold); color: white; padding: 15px; cursor: pointer; border-radius: 8px; font-family: 'MedievalSharp'; }
+.rune-grid { display: grid; grid-template-columns: repeat(2, 130px); gap: 20px; justify-content: center; margin: 25px 0; }
+.rune-stone { width: 130px; height: 130px; background: #000; border: 3px solid #333; border-radius: 12px; cursor: pointer; display: grid; place-items: center; font-size: 2.5rem; color: #222; }
+.rune-stone.active.fire { color: #ff4d4d; border-color: #ff4d4d; box-shadow: 0 0 30px #ff4d4d; }
+.rune-stone.active.water { color: #4da6ff; border-color: #4da6ff; box-shadow: 0 0 30px #4da6ff; }
+.rune-stone.active.earth { color: #4dff88; border-color: #4dff88; box-shadow: 0 0 30px #4dff88; }
+.rune-stone.active.air { color: #ffd700; border-color: #ffd700; box-shadow: 0 0 30px #ffd700; }
+.rune-grid.locked { pointer-events: none; opacity: 0.8; }
+
+/* INPUTS */
+.medieval-input-mini { width: 100%; padding: 12px; margin-bottom: 10px; background: #000; border: 1px solid var(--gold); color: white; border-radius: 5px; outline: none; }
+.medieval-input-group-elongated { display: flex; width: 100%; background: #000; border: 2px solid var(--gold); border-radius: 10px; padding: 6px; margin-bottom: 30px; align-items: center; }
+.medieval-input-group-elongated i { padding: 0 25px; color: var(--gold); font-size: 1.4rem; }
+.medieval-input-group-elongated input { flex: 1; background: transparent; border: none; color: white; padding: 15px 10px; outline: none; font-size: 1.1rem; }
+.medieval-action-btn { background: var(--gold); color: #000; border: none; padding: 15px 40px; font-family: 'Cinzel'; font-weight: 800; cursor: pointer; border-radius: 6px; }
+
+/* MODALS */
 .auth-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #070a11; z-index: 2000; display: flex; align-items: center; justify-content: center; }
 .auth-box { background: var(--card-bg); padding: 50px; width: 420px; text-align: center; border-radius: 10px; }
 .stone-border { border: 4px ridge var(--gold); box-shadow: 0 0 40px rgba(0,0,0,0.8); }
@@ -61,61 +79,27 @@ h1, h2, h3, .brand { font-family: 'Cinzel', serif; color: var(--gold); letter-sp
 .medieval-input-container i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--gold); }
 .medieval-input-container input { width: 100%; padding: 15px 15px 15px 45px; background: #000; border: 1px solid var(--gold); color: white; border-radius: 8px; outline: none; }
 
-/* STYLED ADMIN INPUTS */
-.medieval-input-mini { width: 100%; padding: 12px; margin-bottom: 10px; background: #000; border: 1px solid var(--gold); color: white; border-radius: 5px; outline: none; font-family: 'Poppins', sans-serif; transition: 0.3s; }
-.medieval-input-mini:focus { box-shadow: 0 0 10px var(--gold-dim); background: #0a0a0a; }
-
-/* BUTTONS */
 .medieval-btn { background: #3e2723; color: var(--gold); border: 2px solid var(--gold); padding: 12px 25px; cursor: pointer; font-family: 'Cinzel'; font-weight: bold; border-radius: 4px; transition: 0.3s; }
-.medieval-btn:hover { background: var(--gold); color: #000; }
+.medieval-btn:hover { background: var(--gold); color: #000; transform: translateY(-2px); }
+.medieval-btn.mini { font-size: 0.7rem; padding: 5px 10px; }
 .medieval-btn.wide { width: 100%; }
 
-/* GAMES */
-.game-box { text-align: center; }
-.quiz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-.quiz-option { background: var(--sidebar-bg); border: 2px solid var(--gold); color: white; padding: 15px; cursor: pointer; border-radius: 8px; }
-/* --- Archer's Range 2.0 Styling --- */
-.rune-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 130px);
-    gap: 20px;
-    justify-content: center;
-    margin: 30px auto;
-}
+.wax-seal { width: 60px; height: 60px; background: #8b0000; color: white; border-radius: 50%; display: grid; place-items: center; font-family: 'Cinzel', serif; border: 3px solid #5e0000; box-shadow: 2px 2px 10px rgba(0,0,0,0.5); }
+.parchment-modal { background: #f5e6be; padding: 30px; border-radius: 4px; width: 380px; color: #2d1b18; text-align: center; }
+#day-note-input { width: 100%; height: 150px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.2); margin: 15px 0; padding: 15px; font-family: 'MedievalSharp', cursive; font-size: 1.1rem; resize: none; outline: none; }
 
-.rune-stone {
-    width: 130px;
-    height: 130px;
-    background: #000;
-    border: 3px solid #333;
-    border-radius: 15px;
-    display: grid;
-    place-items: center;
-    font-size: 2.5rem;
-    color: #222; /* Hidden when inactive */
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
-}
-
-/* Elemental Glows when Active */
-.rune-stone.fire.active  { color: #ff4d4d; border-color: #ff4d4d; box-shadow: 0 0 30px #ff4d4d; transform: scale(1.05); }
-.rune-stone.water.active { color: #4da6ff; border-color: #4da6ff; box-shadow: 0 0 30px #4da6ff; transform: scale(1.05); }
-.rune-stone.earth.active { color: #4dff88; border-color: #4dff88; box-shadow: 0 0 30px #4dff88; transform: scale(1.05); }
-.rune-stone.air.active   { color: #ffd700; border-color: #ffd700; box-shadow: 0 0 30px #ffd700; transform: scale(1.05); }
-
-/* Disable clicks while sequence is playing */
-.rune-grid.locked {
-    pointer-events: none;
-    opacity: 0.8;
-}
-
-#archer-status-box {
-    margin-bottom: 20px;
-    min-height: 80px;
-}
-
-/* MISC */
-.event-panel { flex: 1; min-width: 320px; background: rgba(22, 29, 47, 0.8); border: 1px solid var(--gold); border-radius: 15px; padding: 25px; }
+/* HALL OF FAME */
 .achievement-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
 .boss-frame { background: #000; border: 4px ridge var(--gold); padding: 25px; text-align: center; border-radius: 10px; position: relative; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
+
+@media (max-width: 768px) {
+    .sidebar { width: 100%; height: 70px; flex-direction: row; position: fixed; bottom: 0; border-top: 2px solid var(--gold); border-right: none; }
+    .brand { display: none; }
+    .nav-links { display: flex; width: 100%; justify-content: space-around; align-items: center; }
+    .tab { flex-direction: column; padding: 5px !important; font-size: 0.55rem; gap: 4px; border: none !important; }
+    .main-content { padding: 15px; padding-bottom: 100px; }
+    .dashboard-flex { flex-direction: column; }
+    .hero-profile-layout { flex-direction: column; align-items: center; text-align: center; }
+}
