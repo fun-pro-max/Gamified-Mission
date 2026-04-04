@@ -1,406 +1,121 @@
 :root {
-    --bg-dark: #0f172a;
-    --sidebar-bg: #1e293b;
-    --accent-blue: #38bdf8;
-    --accent-green: #4ade80;
-    --accent-red: #f87171;
-    --accent-purple: #a855f7;
-    --accent-gold: #fbbf24;
+    --bg-dark: #0a0e17;
+    --card-bg: #161d2f;
+    --sidebar-bg: #111827;
+    --gold: #d4af37;
+    --gold-dim: #a68a2d;
     --text-main: #f1f5f9;
     --text-dim: #94a3b8;
+    --danger: #ef4444;
     --glass: rgba(255, 255, 255, 0.05);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Poppins', sans-serif; background: var(--bg-dark); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
-/* Sidebar & Nav */
-.sidebar { width: 260px; background: var(--sidebar-bg); display: flex; flex-direction: column; z-index: 100; transition: 0.3s; box-shadow: 4px 0 10px rgba(0,0,0,0.3); }
-.brand { padding: 30px 20px; font-size: 1.5rem; font-weight: 700; color: var(--accent-blue); display: flex; align-items: center; gap: 10px; }
-.tab { padding: 15px 25px; cursor: pointer; color: var(--text-dim); transition: 0.3s; display: flex; align-items: center; gap: 15px; }
-.tab.active { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); border-left: 4px solid var(--accent-blue); }
-.sidebar-id-tag { padding: 20px; font-size: 0.7rem; color: var(--accent-blue); letter-spacing: 1px; border-top: 1px solid var(--glass); }
+h1, h2, h3, .brand { font-family: 'Cinzel', serif; color: var(--gold); letter-spacing: 1px; }
 
-/* War Highlight */
-.war-tab-highlight { color: var(--accent-red) !important; font-weight: 700; border-left: 4px solid var(--accent-red) !important; background: rgba(248, 113, 113, 0.1); }
+/* SIDEBAR */
+.sidebar { width: 260px; background: var(--sidebar-bg); display: flex; flex-direction: column; border-right: 2px solid var(--gold); }
+.brand { padding: 30px 20px; font-size: 1.5rem; text-align: center; }
+.tab { padding: 15px 25px; cursor: pointer; color: var(--text-dim); display: flex; align-items: center; gap: 15px; transition: 0.3s; }
+.tab.active { background: rgba(212, 175, 55, 0.1); color: var(--gold); border-left: 4px solid var(--gold); }
+.sidebar-id-tag { margin-top: auto; padding: 20px; font-size: 0.7rem; color: var(--gold); opacity: 0.6; border-top: 1px solid var(--glass); }
 
-/* Layout Area */
+/* MAIN AREA */
 .main-content { flex: 1; padding: 40px; overflow-y: auto; }
-.content { display: none; animation: fadeIn 0.4s ease-out; }
+.content { display: none; }
 .content.active { display: block; }
 .dashboard-flex { display: flex; gap: 30px; flex-wrap: wrap; }
-.profile-section { flex: 2; min-width: 320px; }
+.profile-section { flex: 2; min-width: 350px; }
 
-/* Cards */
-.profile-card { background: var(--sidebar-bg); padding: 30px; border-radius: 25px; display: flex; align-items: center; gap: 40px; border: 1px solid var(--glass); margin-bottom: 25px; position: relative; }
-.avatar-preview {
-    position: relative; /* Needed for the overlay to sit inside */
-    cursor: pointer;
-}
+/* PASSPORT PROFILE (ALIGNED) */
+.profile-card { background: var(--card-bg); padding: 30px; border-radius: 15px; border: 1px solid var(--glass); margin-bottom: 25px; }
+.hero-profile-layout { display: flex; align-items: flex-start; gap: 30px; }
+.avatar-container { width: 140px; height: 170px; border: 3px solid var(--gold); border-radius: 8px; overflow: hidden; position: relative; flex-shrink: 0; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+.avatar-container img { width: 100%; height: 100%; object-fit: cover; }
 
-.upload-overlay {
-    position: absolute;
-    top: 0; left: 0; 
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: flex; justify-content: center; align-items: center;
-    opacity: 0; /* Hidden by default */
-    transition: 0.3s;
-    color: white;
-    font-size: 1.5rem;
-}
+.hero-info-stack { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.hero-info-stack h2 { font-size: 2rem; margin-bottom: 5px; color: var(--text-main); }
+.info-row { display: flex; align-items: center; gap: 12px; font-size: 1rem; }
+.info-label { color: var(--text-dim); min-width: 60px; font-size: 0.85rem; }
+.info-value { color: var(--gold); font-family: 'MedievalSharp'; font-size: 1.2rem; }
 
-.avatar-preview:hover .upload-overlay {
-    opacity: 1; /* Shows up when you hover over the profile picture */
-}
-.avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
-.gold-display { color: var(--accent-gold); font-weight: 700; font-size: 1.2rem; }
+/* XP BAR */
+.xp-container-stack { margin-top: 15px; }
+.xp-header { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--gold); margin-bottom: 5px; font-weight: bold; }
+.xp-bar-outer { width: 100%; height: 10px; background: #000; border-radius: 10px; overflow: hidden; }
+.xp-bar-fill { height: 100%; background: linear-gradient(90deg, var(--gold), #fff); transition: width 0.6s ease; box-shadow: 0 0 10px var(--gold); }
 
-/* Battlefield Elements */
-.battle-card { background: var(--sidebar-bg); border: 2px solid var(--accent-red); padding: 40px; border-radius: 30px; box-shadow: 0 0 30px rgba(248, 113, 113, 0.2); }
-.war-header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
-.war-instructions-box { background: var(--bg-dark); padding: 25px; border-radius: 15px; border-left: 4px solid var(--accent-blue); }
-.war-instructions-box h3 { font-size: 0.9rem; color: var(--accent-blue); margin-bottom: 10px; text-transform: uppercase; }
+/* CALENDAR GRID */
+.calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); width: 100%; text-align: center; margin-bottom: 10px; color: var(--gold); font-weight: bold; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; width: 100%; }
+.calendar-day { aspect-ratio: 1/1; display: grid; place-items: center; background: rgba(0,0,0,0.3); border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: 0.2s; border: 1px solid transparent; }
+.calendar-day.marked { background: rgba(212, 175, 55, 0.3); border-color: var(--gold); }
 
-/* Hall of Fame */
-.achievement-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
-/* --- Optimized Hall of Fame Frames --- */
-.boss-frame { 
-    background: linear-gradient(145deg, #1e293b, #0f172a); 
-    padding: 25px; 
-    border-radius: 20px; 
-    border: 2px solid var(--accent-gold); 
-    
-    /* ADD THESE 4 LINES TO FIX ALIGNMENT */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+/* AUTH & INPUTS */
+.auth-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #070a11; z-index: 2000; display: flex; align-items: center; justify-content: center; }
+.auth-box { background: var(--card-bg); padding: 50px; width: 420px; text-align: center; border-radius: 10px; }
+.stone-border { border: 4px ridge var(--gold); box-shadow: 0 0 40px rgba(0,0,0,0.8); }
+.medieval-input-container { position: relative; margin-bottom: 20px; }
+.medieval-input-container i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--gold); }
+.medieval-input-container input { width: 100%; padding: 15px 15px 15px 45px; background: #000; border: 1px solid var(--gold); color: white; border-radius: 8px; outline: none; }
+
+/* STYLED ADMIN INPUTS */
+.medieval-input-mini { width: 100%; padding: 12px; margin-bottom: 10px; background: #000; border: 1px solid var(--gold); color: white; border-radius: 5px; outline: none; font-family: 'Poppins', sans-serif; transition: 0.3s; }
+.medieval-input-mini:focus { box-shadow: 0 0 10px var(--gold-dim); background: #0a0a0a; }
+
+/* BUTTONS */
+.medieval-btn { background: #3e2723; color: var(--gold); border: 2px solid var(--gold); padding: 12px 25px; cursor: pointer; font-family: 'Cinzel'; font-weight: bold; border-radius: 4px; transition: 0.3s; }
+.medieval-btn:hover { background: var(--gold); color: #000; }
+.medieval-btn.wide { width: 100%; }
+
+/* GAMES */
+.game-box { text-align: center; }
+.quiz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+.quiz-option { background: var(--sidebar-bg); border: 2px solid var(--gold); color: white; padding: 15px; cursor: pointer; border-radius: 8px; }
+/* --- Archer's Range 2.0 Styling --- */
+.rune-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 130px);
+    gap: 20px;
     justify-content: center;
-    text-align: center; 
-
-    position: relative; 
-    box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
-    min-height: 160px; /* Ensures all frames are the same height on mobile */
+    margin: 30px auto;
 }
 
-/* Fix text margins inside the frame so they don't push up/down */
-.boss-frame h3 {
-    margin: 10px 0 5px 0;
-    line-height: 1.2;
-    font-size: 1.1rem;
-    color: var(--text-main);
-}
-
-.boss-frame p {
-    margin: 0;
-    font-size: 0.75rem;
-    color: var(--text-dim);
-}
-.delete-trophy { position: absolute; top: 10px; right: 10px; background: transparent; border: none; color: var(--accent-red); cursor: pointer; opacity: 0.5; }
-
-/* UI Buttons (Original Style) */
-.input-group { display: flex; gap: 10px; margin-bottom: 20px; background: var(--sidebar-bg); padding: 10px; border-radius: 15px; border: 1px solid var(--glass); }
-input { flex: 1; background: var(--bg-dark); border: 1px solid #334155; padding: 12px; border-radius: 10px; color: white; outline: none; }
-.add-btn { width: 50px; height: 48px; background: var(--accent-blue); border: none; color: var(--bg-dark); border-radius: 10px; cursor: pointer; transition: 0.3s; font-size: 1.1rem; }
-.add-btn:hover { background: var(--accent-purple); color: white; transform: translateY(-2px); }
-.complete-btn { background: var(--glass); border: 1px solid var(--glass); color: white; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.3s; }
-.complete-btn:hover { background: var(--accent-green); color: var(--bg-dark); box-shadow: 0 0 15px var(--accent-green); }
-
-/* Admin Panels */
-.event-panel { flex: 1; background: var(--sidebar-bg); padding: 25px; border-radius: 25px; border: 1px solid var(--accent-blue); height: fit-content; min-width: 280px; }
-.event-item { background: var(--bg-dark); padding: 15px; border-radius: 15px; margin-top: 15px; border-left: 4px solid var(--accent-gold); }
-
-/* Responsive (Mobile Bottom Nav) */
-@media (max-width: 768px) {
-    body { flex-direction: column; }
-    .sidebar { width: 100%; height: 70px; flex-direction: row; position: fixed; bottom: 0; left: 0; top: auto; border-top: 1px solid var(--glass); }
-    .brand { display: none; }
-    .nav-links {
-        display: flex;
-        width: 100%;
-        justify-content: space-between; /* Ensures even spacing across the bar */
-        align-items: center;
-        padding: 0 5px;
-    }
-
-    .tab {
-        padding: 0 !important;
-        flex: 1; /* Gives every icon equal width */
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-width: 0; /* Prevents long text from pushing other icons */
-    }
-
-    .tab i {
-        font-size: 1.1rem;
-        margin-bottom: 2px;
-    }
-
-    .tab span {
-        font-size: 0.55rem; /* Smaller font to fit "Hall of Fame" on one line */
-        font-weight: 600;
-        text-align: center;
-        white-space: nowrap; /* Prevents the text from breaking into two lines */
-        overflow: hidden;
-        text-overflow: ellipsis; /* Adds ... if a name is too long on very small phones */
-        width: 100%;
-    }
-
-    /* Optional: Hide the ID tag on very small screens to give more room to icons */
-    .sidebar-id-tag {
-        display: none !important;
-    }
-    .content header h1 {
-        text-align: center;
-        margin-bottom: 20px;
-        font-size: 1.5rem;
-    }
-    .hero-profile-layout {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-    .hero-info-stack {
-        align-items: center;
-    }
-    .xp-container-stack {
-        margin: 15px auto 0 auto;
-    }
-    .calendar-grid { gap: 5px; }
-    .calendar-day { font-size: 0.7rem; }
-    .achievement-grid {
-        padding: 10px;
-        gap: 15px; /* Tighter gap for better phone fit */
-    }
-    .main-content { padding: 20px; padding-bottom: 90px; }
-    .dashboard-flex { flex-direction: column; }
-    .profile-card { flex-direction: column; text-align: center; }
-}
-/* --- Interactive Calendar --- */
-.calendar-card {
-    flex-direction: column;
-    padding: 20px !important;
-}
-
-.calendar-header {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.calendar-header h3 {
-    font-size: 1.1rem;
-    color: var(--accent-blue);
-    letter-spacing: 1px;
-}
-
-.calendar-header button {
-    background: var(--glass);
-    border: none;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.calendar-weekdays {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    width: 100%;
-    text-align: center;
-    font-weight: 700;
-    font-size: 0.7rem;
-    color: var(--accent-purple);
-    margin-bottom: 10px;
-}
-
-.calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
-    width: 100%;
-}
-
-.calendar-day {
-    aspect-ratio: 1 / 1;
+.rune-stone {
+    width: 130px;
+    height: 130px;
+    background: #000;
+    border: 3px solid #333;
+    border-radius: 15px;
     display: grid;
     place-items: center;
-    font-size: 0.8rem;
-    border-radius: 8px;
-    background: rgba(0, 0, 0, 0.2);
+    font-size: 2.5rem;
+    color: #222; /* Hidden when inactive */
     cursor: pointer;
-    transition: 0.3s;
-    border: 1px solid transparent;
-}
-
-.calendar-day:hover {
-    background: var(--glass);
-    border-color: var(--accent-blue);
-}
-
-.calendar-day.today {
-    border-color: var(--accent-purple);
-    color: var(--accent-purple);
-    font-weight: bold;
-}
-
-.calendar-day.marked {
-    background: rgba(74, 222, 128, 0.2);
-    border-color: var(--accent-green);
-    color: var(--accent-green);
-    box-shadow: 0 0 10px rgba(74, 222, 128, 0.2);
-}
-
-/* --- Restructured Profile Layout --- */
-.hero-profile-layout {
-    display: flex;
-    align-items: flex-start; /* Aligns items to the top */
-    gap: 30px;
-    padding: 25px !important;
-}
-
-/* Passport Size Image */
-.avatar-container {
-    width: 140px;  /* Passport Width */
-    height: 170px; /* Passport Height */
-    border-radius: 12px;
-    border: 3px solid var(--accent-purple);
-    overflow: hidden;
-    position: relative;
-    flex-shrink: 0;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-}
-
-.avatar-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* Info Stack Alignment */
-.hero-info-stack {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: 8px;
-    flex: 1;
-}
-
-.hero-info-stack h2 {
-    font-size: 1.8rem;
-    color: var(--text-main);
-    margin-bottom: 5px;
-    text-transform: capitalize;
-}
-
-.info-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.95rem;
-}
-
-.info-label {
-    color: var(--text-dim);
-    font-weight: 400;
-}
-
-.info-value {
-    color: var(--accent-blue);
-    font-weight: 600;
-}
-
-/* XP Progress Bar Styling */
-.xp-container-stack {
-    margin-top: 15px;
-    width: 100%;
-    max-width: 300px;
-}
-
-.xp-header {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--accent-purple);
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.xp-bar-outer {
-    width: 100%;
-    height: 12px;
-    background: rgba(0, 0, 0, 0.4);
-    border-radius: 20px;
-    overflow: hidden;
-    border: 1px solid var(--glass);
-}
-
-.xp-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue));
-    box-shadow: 0 0 10px var(--accent-purple);
-    transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-/* Mobile Fix */
-
-
-/* Auth */
-.auth-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 2000; display: flex; align-items: center; justify-content: center; }
-.auth-box { background: var(--sidebar-bg); padding: 40px; border-radius: 30px; text-align: center; width: 100%; max-width: 400px; border: 1px solid var(--accent-blue); }
-.input-group-auth { position: relative; margin-bottom: 15px; }
-.input-group-auth i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--accent-blue); }
-.input-group-auth input { width: 100%; padding: 15px 15px 15px 45px; }
-.auth-btn { width: 100%; padding: 15px; background: var(--accent-blue); border: none; color: var(--bg-dark); border-radius: 15px; font-weight: 700; cursor: pointer; }
-
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.admin-only, .leader-only { display: none; }
-
-/* --- Smoothness & Motion --- */
-
-/* Smooth Bar filling */
-.fill {
-    transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-/* Task Card Entry Animation */
-@keyframes slideInUp {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.profile-card {
-    animation: slideInUp 0.3s ease-out;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.profile-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-}
-
-/* Task Completion "Poof" Animation */
-.task-exit {
-    transform: translateX(50px) scale(0.9);
-    opacity: 0 !important;
-    transition: all 0.3s ease-in;
-}
-
-/* Calendar Click Feedback */
-.calendar-day {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.calendar-day:active {
-    transform: scale(0.8);
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
 }
 
-/* Instant Preview for Avatar */
-#imagePreview {
-    transition: filter 0.3s ease;
+/* Elemental Glows when Active */
+.rune-stone.fire.active  { color: #ff4d4d; border-color: #ff4d4d; box-shadow: 0 0 30px #ff4d4d; transform: scale(1.05); }
+.rune-stone.water.active { color: #4da6ff; border-color: #4da6ff; box-shadow: 0 0 30px #4da6ff; transform: scale(1.05); }
+.rune-stone.earth.active { color: #4dff88; border-color: #4dff88; box-shadow: 0 0 30px #4dff88; transform: scale(1.05); }
+.rune-stone.air.active   { color: #ffd700; border-color: #ffd700; box-shadow: 0 0 30px #ffd700; transform: scale(1.05); }
+
+/* Disable clicks while sequence is playing */
+.rune-grid.locked {
+    pointer-events: none;
+    opacity: 0.8;
 }
+
+#archer-status-box {
+    margin-bottom: 20px;
+    min-height: 80px;
+}
+
+/* MISC */
+.event-panel { flex: 1; min-width: 320px; background: rgba(22, 29, 47, 0.8); border: 1px solid var(--gold); border-radius: 15px; padding: 25px; }
+.achievement-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+.boss-frame { background: #000; border: 4px ridge var(--gold); padding: 25px; text-align: center; border-radius: 10px; position: relative; }

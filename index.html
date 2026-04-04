@@ -3,254 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuestLog | High Command</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>QuestLog | Eternal Realm</title>
+    <!-- Fonts: Medieval and Professional -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=MedievalSharp&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
-    <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1e293b">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="icon-192.png">
 </head>
 <body>
-    <!-- Auth Overlay -->
-    <div id="auth-overlay" class="auth-modal" style="display: none;">
-        <div class="auth-box">
+
+    <!-- 1. IDENTITY VERIFICATION OVERLAY (FIRST FLOW) -->
+    <div id="auth-overlay" class="auth-modal">
+        <div class="auth-box stone-border">
             <div class="auth-header">
-                <i class="fas fa-dragon"></i>
-                <h2>QuestLog</h2>
-                <p>Initialize Eternal Identity</p>
+                <div class="wax-seal">QL</div>
+                <h2>Identity Verification</h2>
+                <p>Present your name and passkey to enter the Kingdom.</p>
             </div>
-            <div class="input-group-auth">
+            <div class="medieval-input-container">
                 <i class="fas fa-user-shield"></i>
-                <input type="text" id="username" placeholder="Hero Name">
+                <input type="text" id="username" placeholder="Hero Name" autocomplete="off">
             </div>
-            <div class="input-group-auth">
+            <div class="medieval-input-container">
                 <i class="fas fa-key"></i>
                 <input type="password" id="password" placeholder="Passkey">
             </div>
-            <button onclick="handleAuth()" class="auth-btn">Enter Realm</button>
+            <button onclick="handleAuth()" class="medieval-btn wide">Initialize Session</button>
         </div>
     </div>
-<!-- Hidden input for Event Evidence -->
-<input type="file" id="evidenceUpload" accept="image/*" style="display:none;">
-    <!-- Nav Bar -->
+
+    <!-- 2. NAVIGATION SIDEBAR -->
     <div class="sidebar">
-        <div class="brand">
-            <i class="fas fa-dragon"></i>
-            <span>QuestLog</span>
-        </div>
+        <div class="brand"><i class="fas fa-dragon"></i> QuestLog</div>
         <nav class="nav-links">
-            <div class="tab active" onclick="showContent('dashboard', this)">
-                <i class="fas fa-chart-line"></i> <span>Dashboard</span>
-            </div>
-            <div class="tab" onclick="showContent('training', this)">
-                <i class="fas fa-dumbbell"></i> <span>Training</span>
-            </div>
-            <div class="tab" onclick="showContent('quests', this)">
-                <i class="fas fa-scroll"></i> <span>Quests</span>
-            </div>
-            <div class="tab" onclick="showContent('boss-fights', this)">
-                <i class="fas fa-skull-crossbones"></i> <span>Bosses</span>
-            </div>
-            <!-- Dynamic Role Tabs -->
-            <div id="guild-tab-link" class="tab" onclick="showContent('guilds', this)">
-                <i class="fas fa-shield-halved"></i> <span>Guilds</span>
-            </div>
-            <div id="admin-tab-link" class="tab" onclick="showContent('admin-requests', this)" style="display:none">
-                <i class="fas fa-envelope-open-text"></i> <span>Approvals</span>
-            </div>
-            <div id="war-front-link" class="tab war-tab-highlight" onclick="showContent('war-front', this)" style="display:none">
-                <i class="fas fa-crossed-swords"></i> <span>War Front</span>
-            </div>
-            <div class="tab" onclick="showContent('achievements', this)">
-                <i class="fas fa-trophy"></i> <span>Hall of Fame</span>
-            </div>
+            <div class="tab active" onclick="showContent('dashboard', this)"><i class="fas fa-map"></i> <span>Dashboard</span></div>
+            <div class="tab" onclick="showContent('alchemist', this)"><i class="fas fa-flask"></i> <span>Alchemist</span></div>
+            <div class="tab" onclick="showContent('archer', this)"><i class="fas fa-bullseye"></i> <span>Archer</span></div>
+            <div class="tab" onclick="showContent('boss-fights', this)"><i class="fas fa-skull"></i> <span>Bosses</span></div>
+            <div id="admin-tab-link" class="tab" onclick="showContent('admin-requests', this)" style="display:none"><i class="fas fa-scroll"></i> <span>Approvals</span></div>
+            <div class="tab" onclick="showContent('achievements', this)"><i class="fas fa-trophy"></i> <span>Hall of Fame</span></div>
         </nav>
         <div class="sidebar-id-tag" id="sidebar-id"></div>
     </div>
 
     <div class="main-content">
-        <!-- Dashboard -->
+        <!-- 3. DASHBOARD (PASSPORT ALIGNMENT) -->
         <div class="content active" id="dashboard">
             <div class="dashboard-flex">
                 <div class="profile-section">
                     <header><h1>Hero Profile</h1></header>
                     <div class="profile-card hero-profile-layout">
-    <!-- Passport Style Image -->
-    <div class="avatar-container">
-        <img id="imagePreview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix">
-        <div class="upload-overlay" onclick="document.getElementById('imageUpload').click();">
-            <i class="fas fa-camera"></i>
-        </div>
-        <input type="file" id="imageUpload" accept="image/*" onchange="uploadAvatar(this)" style="display:none;">
-    </div>
+                        <div class="avatar-container">
+                            <img id="imagePreview" src="">
+                            <div class="upload-overlay" onclick="document.getElementById('imageUpload').click();"><i class="fas fa-camera"></i></div>
+                            <input type="file" id="imageUpload" accept="image/*" onchange="uploadAvatar(this)" style="display:none;">
+                        </div>
+                        <div class="hero-info-stack">
+                            <h2 id="heroName">Hero</h2>
+                            <div class="info-row gold-display"><i class="fas fa-coins"></i> <span id="goldCount">0</span></div>
+                            <div class="info-row"><span class="info-label">Rank:</span> <span id="rankTitle" class="info-value">Novice</span></div>
+                            <div class="info-row"><span class="info-label">Level:</span> <span id="displayLevel" class="info-value">1</span></div>
+                            <div class="xp-container-stack">
+                                <div class="xp-header"><span>Experience</span><span id="progressPercent">0%</span></div>
+                                <div class="xp-bar-outer"><div id="lvlBar" class="xp-bar-fill"></div></div>
+                            </div>
+                        </div>
+                    </div>
 
-    <!-- Aligned Hero Info -->
-    <div class="hero-info-stack">
-        <h2 id="heroName">Hero Name</h2>
-        
-        <div class="info-row gold-display">
-            <i class="fas fa-coins"></i> <span id="goldCount">0</span>
-        </div>
-
-        <div class="info-row">
-            <span class="info-label">Rank:</span>
-            <span id="rankTitle" class="info-value">Novice Adventurer</span>
-        </div>
-
-        <div class="info-row">
-            <span class="info-label">Level:</span>
-            <span id="displayLevel" class="info-value">1</span>
-        </div>
-
-        <!-- XP Section with Progress Bar -->
-        <div class="xp-container-stack">
-            <div class="xp-header">
-                <span>Experience</span>
-                <span id="progressPercent">0%</span>
-            </div>
-            <div class="xp-bar-outer">
-                <div id="lvlBar" class="xp-bar-fill" style="width: 0%;"></div>
-            </div>
-        </div>
-    </div>
-</div>
+                    <div class="profile-card calendar-card">
+                        <div class="calendar-header">
+                            <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                            <h3 id="calendarMonth">Month</h3>
+                            <button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div class="calendar-weekdays"><div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div></div>
+                        <div id="calendarGrid" class="calendar-grid"></div>
+                    </div>
                 </div>
 
                 <aside class="event-panel">
-                    <h3><i class="fas fa-crown"></i> Admin Events</h3>
+                    <h3><i class="fas fa-feather-pointed"></i> Kingdom Events</h3>
                     <div id="event-list"></div>
                     
+                    <!-- CREATOR CONSOLE (STYLED INPUTS) -->
                     <div id="admin-controls" class="admin-only">
                         <hr class="panel-divider">
                         <p class="admin-label">CREATOR CONSOLE</p>
-                        <input type="text" id="evTitle" placeholder="Event Title" class="admin-input">
-                        <input type="number" id="evGold" placeholder="Gold Reward" class="admin-input">
-                        <button onclick="postEvent()" class="complete-btn" style="width:100%">Post Event</button>
+                        <input type="text" id="evTitle" placeholder="Proclamation Title" class="medieval-input-mini">
+                        <input type="number" id="evGold" placeholder="Gold Bounty" class="medieval-input-mini">
+                        <button onclick="postEvent()" class="medieval-btn wide">Post Event</button>
                     </div>
                 </aside>
             </div>
-            <!-- Interactive Calendar Card -->
-<div class="profile-card calendar-card">
-    <div class="calendar-header">
-        <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
-        <h3 id="calendarMonth">February 2024</h3>
-        <button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
+        </div>
+
+        <!-- 4. ALCHEMIST (RANDOMIZED QUIZ) -->
+        <div class="content" id="alchemist">
+            <header><h1>Alchemist's Chamber</h1></header>
+            <div class="profile-card game-box" id="quiz-start">
+                <i class="fas fa-vial fa-4x" style="color:var(--gold)"></i>
+                <h2>Mental Transmutation</h2>
+                <p>The Alchemist randomly picks 10 riddles. Score 8/10 to earn 25 XP.</p>
+                <button onclick="startQuiz()" class="medieval-btn">Begin Study</button>
+            </div>
+            <div class="profile-card game-box" id="quiz-play" style="display:none;">
+                <h2 id="quiz-q">Question?</h2>
+                <div id="quiz-options" class="quiz-grid"></div>
+                <p id="quiz-p" class="admin-label" style="margin-top:20px;"></p>
+            </div>
+        </div>
+
+        <!-- ARCHER'S RANGE (MEMORY GAME OVERHAUL) -->
+<div class="content" id="archer">
+    <header><h1>Archer's Range</h1></header>
+    
+    <!-- Start Screen -->
+    <div class="profile-card game-box" id="archer-start">
+        <i class="fas fa-bullseye fa-4x" style="color:var(--gold); margin-bottom: 15px;"></i>
+        <h2>Trial of the Four Elements</h2>
+        <p>A true archer tracks the winds. Repeat the magical sequence to earn 25 XP.</p>
+        <button onclick="startArcher()" class="medieval-btn">Begin Trial</button>
     </div>
-    <div class="calendar-weekdays">
-        <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+
+    <!-- Active Game Screen -->
+    <div class="profile-card game-box" id="archer-play" style="display:none;">
+        <div id="archer-status-box">
+            <h3 id="archer-status" style="color: var(--gold); margin-bottom: 10px;">WATCH CAREFULLY...</h3>
+            <p id="archer-r" class="admin-label">Level 1 of 3</p>
+        </div>
+
+        <div class="rune-grid" id="rune-grid">
+            <!-- Rune 0: Fire -->
+            <div class="rune-stone fire" data-id="0">
+                <i class="fas fa-fire"></i>
+            </div>
+            <!-- Rune 1: Water -->
+            <div class="rune-stone water" data-id="1">
+                <i class="fas fa-tint"></i>
+            </div>
+            <!-- Rune 2: Earth -->
+            <div class="rune-stone earth" data-id="2">
+                <i class="fas fa-leaf"></i>
+            </div>
+            <!-- Rune 3: Air -->
+            <div class="rune-stone air" data-id="3">
+                <i class="fas fa-bolt"></i>
+            </div>
+        </div>
+        
+        <button onclick="resetArcher()" class="medieval-btn mini danger">Forfeit Trial</button>
     </div>
-    <div id="calendarGrid" class="calendar-grid">
-        <!-- Days generated by JS -->
-    </div>
-    <p class="small-label" style="text-align: center; margin-top: 10px; opacity: 0.6;">Tap a date to mark your progress</p>
 </div>
-        </div>
 
-        <!-- Admin Approvals Tab -->
-        <div class="content" id="admin-requests">
-            <header><h1>War Approvals</h1></header>
-            <div id="approval-list" class="task-grid">
-                <!-- Appeals from leaders appear here -->
-            </div>
-        </div>
-
-        <!-- War Front (Restricted) -->
-        <div class="content" id="war-front">
-            <header><h1>The Battlefield</h1></header>
-            <div class="battle-card">
-                <div class="war-header">
-                    <i class="fas fa-burst fa-2x" style="color:var(--accent-red)"></i>
-                    <h2 id="war-guild-name">Active War</h2>
-                </div>
-                <div class="war-instructions-box">
-                    <h3><i class="fas fa-file-signature"></i> Admin Instructions</h3>
-                    <p id="war-instructions-text">Waiting for strategy...</p>
-                </div>
-                <div class="admin-only" style="margin-top: 20px;">
-                    <button class="complete-btn" style="background:var(--accent-green); width:100%" onclick="declareWinner()">Declare Victory & End War</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Guilds -->
-        <div class="content" id="guilds">
-            <header><h1>Guild Hall</h1></header>
-            <div id="guild-create-zone">
-                <div class="profile-card hero-centered">
-                    <h3>No Guild Found</h3>
-                    <p>Spend 500 Gold to establish a new Guild and become a Leader.</p>
-                    <input type="text" id="newGName" placeholder="Guild Name" class="guild-input">
-                    <button class="complete-btn" onclick="createGuild()">Create Guild (500g)</button>
-                </div>
-            </div>
-
-            <div id="active-guild" style="display: none;">
-                <div class="profile-card">
-                    <div class="level-circle" id="gInitial">G</div>
-                    <div style="flex: 1;">
-                        <h2 id="gTitle">Guild Name</h2>
-                        <p id="roleText">Role: Member</p>
-                    </div>
-                    <button id="request-war-btn" class="complete-btn leader-only" onclick="requestWar()">Request War Sanction</button>
-                    <div id="war-pending-msg" class="leader-only" style="display:none; color:var(--accent-gold); font-weight:bold;">War Appeal Sent...</div>
-                </div>
-                <div class="guild-grid">
-                    <div class="profile-card vertical-align">
-                        <h3>Guild Chat</h3>
-                        <div id="chatBox" class="chat-area"></div>
-                        <div class="input-group">
-                            <input type="text" id="msgInput" placeholder="Message...">
-                            <button onclick="sendMsg()" class="add-btn"><i class="fas fa-paper-plane"></i></button>
-                        </div>
-                    </div>
-                    <div class="profile-card vertical-align">
-                        <h3>Objectives</h3>
-                        <div id="gTasks" class="task-list-full"></div>
-                        <div class="input-group leader-only">
-                            <input type="text" id="gTaskIn" placeholder="New objective...">
-                            <button onclick="addGTask()" class="add-btn"><i class="fas fa-plus"></i></button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tasks -->
-        <div class="content" id="training">
-            <header><h1>Training</h1></header>
-            <div class="input-group"><input type="text" id="tIn" placeholder="Training drills..."><button onclick="addTask('training')" class="add-btn">+</button></div>
-            <div id="training-list" class="task-grid"></div>
-        </div>
-        <div class="content" id="quests">
-            <header><h1>Quest Board</h1></header>
-            <div class="input-group"><input type="text" id="qIn" placeholder="Objectives..."><button onclick="addTask('quests')" class="add-btn">+</button></div>
-            <div id="quests-list" class="task-grid"></div>
-        </div>
+        <!-- 6. BOSS RAIDS -->
         <div class="content" id="boss-fights">
             <header><h1>Boss Raids</h1></header>
-            <div class="input-group"><input type="text" id="bIn" placeholder="Summon Boss..."><button onclick="addTask('boss')" class="add-btn"><i class="fas fa-skull"></i></button></div>
+            <div class="input-group">
+                <input type="text" id="bIn" placeholder="Identify the Threat...">
+                <button onclick="addTask('boss')" class="add-btn"><i class="fas fa-skull"></i></button>
+            </div>
             <div id="boss-list" class="task-grid"></div>
         </div>
+
+        <!-- 7. APPROVALS HUB -->
+        <div class="content" id="admin-requests">
+            <header><h1>Approvals Hub</h1></header>
+            <div id="approval-list" class="task-grid"></div>
+        </div>
+
+        <!-- 8. HALL OF FAME -->
         <div class="content" id="achievements">
             <header><h1>Hall of Fame</h1></header>
             <div id="ach-list" class="achievement-grid"></div>
         </div>
     </div>
-    <!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
+    <!-- Note Modal -->
+    <div id="calendar-modal" class="modal-overlay" style="display:none;">
+        <div class="parchment-modal stone-border">
+            <h3 id="modal-date-title">Date</h3>
+            <textarea id="day-note-input" placeholder="Write your daily scroll..."></textarea>
+            <div class="modal-btns">
+                <button onclick="saveDayNote()" class="medieval-btn mini">Save</button>
+                <button onclick="closeCalendarModal()" class="medieval-btn mini danger">Close</button>
+            </div>
+        </div>
+    </div>
 
+    <!-- Hidden Proof Input -->
+    <input type="file" id="evidenceUpload" accept="image/*" style="display:none;">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="script.js"></script>
-   <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-      .then(() => console.log("PWA Active"))
-      .catch(err => console.log("PWA Error", err));
-  }
-</script>
 </body>
 </html>
