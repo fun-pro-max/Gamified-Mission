@@ -1,5 +1,5 @@
 /**
- * QUESTLOG MASTER SCRIPT - HIGH COMMAND EDITION
+ * QUESTLOG MASTER ENGINE - ETERNAL ADVENTURE VERSION
  */
 
 // 1. Firebase Config
@@ -15,48 +15,46 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// 2. Constants & State
+// 2. Constants & Global State
 const ADMIN_CRED = { user: 'Gourav', pass: 'admin' };
-const K_SESSION = 'realm_identity_eternal_final';
+const K_SESSION = 'realm_identity_eternal_v11';
 let currentUser = null, globalEvents = [], activeWar = null, currentNavDate = new Date(), isDataLoaded = false;
 let currentClaimData = null, selectedDateStr = null;
 
-// --- MASTER QUIZ POOL ---
-const masterQuizPool = [
-    {q: "Which metal is the Alchemist's ultimate goal?", a: ["Silver","Gold","Iron"], c: 1},
-    {q: "A fortification built upon a hill is a?", a: ["Motte","Keep","Dungeon"], c: 0},
-    {q: "Which metal rusts when kissed by air?", a: ["Gold","Iron","Lead"], c: 1},
-    {q: "The code of a Knight is known as?", a: ["Fealty","Heraldry","Chivalry"], c: 2},
-    {q: "Alchemy's 'Aqua Regia' can dissolve which metal?", a: ["Iron","Silver","Gold"], c: 2},
-    {q: "Ancient paper made from skins is called?", a: ["Parchment","Papyrus","Scroll"], c: 0},
-    {q: "A defensive ditch around a castle is a?", a: ["Moat","Trench","Canyon"], c: 0},
-    {q: "Which stars guided sailors in the North?", a: ["Orion","Polaris","Sirius"], c: 1},
-    {q: "What Bird is the symbol of alchemy's final stage?", a: ["Raven","Phoenix","Eagle"], c: 1},
-    {q: "The inner stronghold of a castle is the?", a: ["Keep","Bailey","Turret"], c: 0}
-];
-let activeQuizSet = [], quizIdx = 0, quizScore = 0;
-let archSeq = [], userSeq = [], archRound = 1, isArcherPlaying = false;
+// --- MASTER NOTIFICATION SYSTEM ---
+function showRealmProclamation(text) {
+    const banner = document.getElementById('realm-notif');
+    const display = document.getElementById('notif-text');
+    display.innerText = text;
+    banner.classList.add('active');
+    setTimeout(() => { banner.classList.remove('active'); }, 4000);
+}
 
-// --- 1. INITIALIZATION ---
+// --- INITIALIZATION ---
 window.onload = async () => {
     const savedID = localStorage.getItem(K_SESSION);
     startGlobalListeners();
-    if (savedID) { await autoLogin(savedID); } 
-    else { document.getElementById('auth-overlay').style.display = 'flex'; }
+    if (savedID) {
+        await autoLogin(savedID);
+    } else {
+        document.getElementById('auth-overlay').style.display = 'flex';
+    }
     document.getElementById('evidenceUpload').onchange = handleProofUpload;
 };
 
 async function autoLogin(name) {
-    if (name === ADMIN_CRED.user) {
-        const doc = await db.collection("users").doc("admin_global").get();
-        let admin = { name: ADMIN_CRED.user, role: 'admin', gold: 99999, level: 99, xp: 0, tasks: [], avatar: null, markedDates: [] };
-        if (doc.exists) admin = { ...admin, ...doc.data() };
-        login(admin);
-    } else {
-        const doc = await db.collection("users").doc(name).get();
-        if (doc.exists) login({ name, ...doc.data() });
-        else document.getElementById('auth-overlay').style.display = 'flex';
-    }
+    try {
+        if (name === ADMIN_CRED.user) {
+            const doc = await db.collection("users").doc("admin_global").get();
+            let admin = { name: ADMIN_CRED.user, role: 'admin', gold: 99999, level: 99, xp: 0, tasks: [], avatar: null, markedDates: [] };
+            if (doc.exists) admin = { ...admin, ...doc.data() };
+            login(admin);
+        } else {
+            const doc = await db.collection("users").doc(name).get();
+            if (doc.exists) login({ name, ...doc.data() });
+            else document.getElementById('auth-overlay').style.display = 'flex';
+        }
+    } catch (e) { document.getElementById('auth-overlay').style.display = 'flex'; }
 }
 
 async function handleAuth() {
@@ -66,7 +64,7 @@ async function handleAuth() {
     const ref = db.collection("users").doc(name), doc = await ref.get();
     if (doc.exists) {
         if (doc.data().pass === pass) login({ name, ...doc.data() });
-        else alert("Incorrect Passkey.");
+        else showRealmProclamation("The secret key does not match this name.");
     } else {
         const newUser = { pass, role: 'player', gold: 100, level: 1, xp: 0, guild: null, tasks: [], achievements: [], warAppeal: false, markedDates: [], avatar: null };
         await ref.set(newUser); login({ name, ...newUser });
@@ -89,7 +87,7 @@ async function saveState() {
     await db.collection("users").doc(docId).set(data, { merge: true });
 }
 
-// --- 2. UI & LISTENERS ---
+// --- GLOBAL LISTENERS ---
 function startGlobalListeners() {
     db.collection("events").orderBy("createdAt", "desc").onSnapshot(snap => {
         globalEvents = snap.docs.map(d => ({id: d.id, ...d.data()}));
@@ -107,7 +105,6 @@ function refreshUI() {
         const isAdmin = currentUser.role === 'admin';
         document.getElementById('admin-tab-link').style.display = isAdmin ? 'flex' : 'none';
         document.getElementById('guild-tab-link').style.display = isAdmin ? 'none' : 'flex';
-        
         let canSeeWar = (isAdmin && activeWar) || (activeWar && currentUser.guild === activeWar.guild);
         document.getElementById('war-front-link').style.display = canSeeWar ? 'flex' : 'none';
 
@@ -138,7 +135,21 @@ function refreshUI() {
     });
 }
 
-// --- 3. ALCHEMIST ---
+// --- ALCHEMIST (RANDOMIZED 10-QUESTION GAME) ---
+const masterQuizPool = [
+    {q: "Which metal is the Alchemist's goal?", a: ["Silver","Gold","Iron"], c: 1},
+    {q: "Fortification on a hill?", a: ["Motte","Keep","Dungeon"], c: 0},
+    {q: "Metal that rusts in air?", a: ["Gold","Iron","Lead"], c: 1},
+    {q: "Knight code of honor?", a: ["Fealty","Heraldry","Chivalry"], c: 2},
+    {q: "Alchemy's 'Aqua Regia' dissolves?", a: ["Iron","Silver","Gold"], c: 2},
+    {q: "Medieval paper?", a: ["Parchment","Papyrus","Scroll"], c: 0},
+    {q: "Bird of alchemy's rebirth?", a: ["Raven","Phoenix","Eagle"], c: 1},
+    {q: "Unit of gold purity?", a: ["Ounce","Karat","Ingot"], c: 1},
+    {q: "Strongest medieval bow?", a: ["Longbow","Crossbow","Recurve"], c: 0},
+    {q: "Castle water defense?", a: ["Moat","Well","River"], c: 0}
+];
+let activeQuizSet = [], quizIdx = 0, quizScore = 0;
+
 function startQuiz() { 
     activeQuizSet = [...masterQuizPool].sort(() => Math.random() - 0.5).slice(0, 10);
     quizIdx = 0; quizScore = 0; 
@@ -157,13 +168,14 @@ async function ansQ(i) {
     quizIdx++;
     if(quizIdx < 10) showQ();
     else {
-        if(quizScore >= 8) { alert("Wise mind! +25 XP"); await grantXP(); }
-        else { alert(`Insufficient wisdom. Score: ${quizScore}/10`); }
+        if(quizScore >= 8) { showRealmProclamation("Wise Mind! +25 XP"); await grantXP(); }
+        else { showRealmProclamation(`Score: ${quizScore}/10. Study more.`); }
         document.getElementById('quiz-play').style.display = 'none'; document.getElementById('quiz-start').style.display = 'block';
     }
 }
 
-// --- 4. ARCHER RANGE ---
+// --- ARCHER RANGE (STABLE ENGINE) ---
+let archSeq = [], userSeq = [], archRound = 1, isArcherPlaying = false;
 async function startArcher() { 
     archRound = 1; 
     document.getElementById('archer-start').style.display = 'none'; 
@@ -193,17 +205,17 @@ function enableArcherInput() {
         if(isArcherPlaying) return;
         const id = parseInt(this.dataset.id); userSeq.push(id);
         this.classList.add('active'); setTimeout(()=>this.classList.remove('active'), 200);
-        if(userSeq[userSeq.length-1] !== archSeq[userSeq.length-1]) { alert("Missed!"); resetArcher(); return; }
+        if(userSeq[userSeq.length-1] !== archSeq[userSeq.length-1]) { showRealmProclamation("Missed!"); resetArcher(); return; }
         if(userSeq.length === archSeq.length) {
             if(archRound < 3) { archRound++; setTimeout(nextRound, 1000); }
-            else { alert("Bullseye! +25 XP"); resetArcher(); await grantXP(); }
+            else { showRealmProclamation("Master Archer! +25 XP"); resetArcher(); await grantXP(); }
         }
     });
 }
 function resetArcher() { document.getElementById('archer-play').style.display = 'none'; document.getElementById('archer-start').style.display = 'block'; }
-async function grantXP() { currentUser.xp += 25; if(currentUser.xp>=100){currentUser.level++; currentUser.xp=0;} refreshUI(); await saveState(); }
+async function grantXP() { currentUser.xp += 25; if(currentUser.xp>=100){currentUser.level++; currentUser.xp=0; showRealmProclamation("LEVEL UP!");} refreshUI(); await saveState(); }
 
-// --- 5. EVENTS & APPROVALS ---
+// --- EVENTS ---
 async function postEvent() {
     const t = document.getElementById('evTitle').value, g = parseInt(document.getElementById('evGold').value);
     if (!t || !g) return;
@@ -212,7 +224,7 @@ async function postEvent() {
 }
 async function deleteEvent(id) { 
     if (currentUser.role !== 'admin') return;
-    if(confirm("Creator, permanently strike this proclamation?")) {
+    if(confirm("Strike proclamation?")) {
         const el = document.querySelector(`[data-ev-id="${id}"]`);
         if(el) el.style.display = 'none';
         await db.collection("events").doc(id).delete();
@@ -224,18 +236,20 @@ function renderEvents() {
     globalEvents.forEach(ev => {
         list.innerHTML += `<div class="event-item" data-ev-id="${ev.id}">
             <div style="display:flex; justify-content:space-between"><h4>${ev.title}</h4>${isAdmin ? `<i class="fas fa-trash-alt" style="color:var(--danger); cursor:pointer" onclick="deleteEvent('${ev.id}')"></i>` : ''}</div>
-            <p class="gold-reward" style="margin:5px 0;">+ ${ev.gold}g</p>
+            <p class="gold-reward">+ ${ev.gold}g</p>
             ${!isAdmin ? `<button class="medieval-btn mini wide" onclick="openProof('${ev.id}','${ev.title}',${ev.gold})">Proof</button>` : ''}
         </div>`;
     });
 }
+
+// --- APPROVALS ---
 function openProof(id, title, gold) { currentClaimData = {id, title, gold}; document.getElementById('evidenceUpload').click(); }
 async function handleProofUpload(e) {
     if (!e.target.files[0]) return;
     const reader = new FileReader();
     reader.onload = async (event) => {
         await db.collection("submissions").add({ user: currentUser.name, title: currentClaimData.title, reward: currentClaimData.gold, proof: event.target.result, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-        alert("Sent for approval.");
+        showRealmProclamation("Proof sent to Command.");
     };
     reader.readAsDataURL(e.target.files[0]);
 }
@@ -243,31 +257,32 @@ async function syncApprovals() {
     const subs = (await db.collection("submissions").get()).docs.map(d => ({id: d.id, ...d.data()}));
     const wars = (await db.collection("users").where("warAppeal", "==", true).get()).docs.map(d => ({ name: d.id, ...d.data() }));
     const list = document.getElementById('approval-list'); if(!list) return;
-    list.innerHTML = (subs.length === 0 && wars.length === 0) ? "<p style='text-align:center'>Quiet...</p>" : "";
+    list.innerHTML = (subs.length === 0 && wars.length === 0) ? "<p style='text-align:center'>No appeals.</p>" : "";
     subs.forEach(s => {
         list.innerHTML += `<div class="profile-card"><h3>${s.user}: ${s.title}</h3><img src="${s.proof}" style="width:100%; border-radius:4px; margin:10px 0"><button class="medieval-btn" onclick="approveClaim('${s.id}','${s.user}',${s.reward})">Grant Gold</button></div>`;
     });
     wars.forEach(w => {
-        list.innerHTML += `<div class="profile-card"><h3>War Appeal: ${w.guild}</h3><button class="medieval-btn" onclick="approveWar('${w.name}','${w.guild}')">Sanction War</button></div>`;
+        list.innerHTML += `<div class="profile-card"><h3>War Appeal: ${w.guild}</h3><button class="medieval-btn" onclick="approveWar('${w.name}','${w.guild}')">Sanction</button></div>`;
     });
 }
 async function approveClaim(id, user, gold) {
     const ref = db.collection("users").doc(user), doc = await ref.get();
     if(doc.exists) await ref.update({ gold: (doc.data().gold || 0) + gold });
     await db.collection("submissions").doc(id).delete();
+    showRealmProclamation("Reward Approved.");
 }
 
-// --- 6. GUILD & WAR ---
+// --- GUILD & WAR ---
 async function createGuild() {
     const n = document.getElementById('newGName').value.trim();
-    if (currentUser.level < 10) return alert("Level 10 required.");
-    if (currentUser.gold < 1000) return alert("1,000 Gold required.");
+    if (currentUser.level < 10) return showRealmProclamation("Level 10 required.");
+    if (currentUser.gold < 1000) return showRealmProclamation("1,000 Gold required.");
     currentUser.gold -= 1000; currentUser.guild = n; currentUser.role = 'leader';
     await saveState(); refreshUI();
 }
-async function requestWar() { currentUser.warAppeal = true; await saveState(); refreshUI(); }
+async function requestWar() { currentUser.warAppeal = true; await saveState(); refreshUI(); showRealmProclamation("War Appeal Sent."); }
 async function approveWar(leader, guild) {
-    const type = prompt("Enter Trial: 'archer' or 'alchemist'");
+    const type = prompt("Trial: archer/alchemist");
     const cmds = prompt("Strategy:");
     await db.collection("warRoom").doc("status").set({ activeWar: { guild, leader, instructions: cmds, type } });
     await db.collection("users").doc(leader).update({ warAppeal: false });
@@ -283,10 +298,10 @@ async function declareWinner() {
     const doc = await ref.get();
     if (doc.exists) await ref.update({ gold: (doc.data().gold || 0) + 2000 });
     await db.collection("warRoom").doc("status").update({ activeWar: null });
-    alert("Victory Declared.");
+    showRealmProclamation("War Ends. Leader Reward Distributed.");
 }
 
-// --- 7. CORE MODULES ---
+// --- CORE (BOSS, CALENDAR, AVATAR) ---
 function addTask(type) {
     const val = document.getElementById('bIn').value.trim();
     if(!val) return; currentUser.tasks.push({id:Date.now(), text:val, type:'boss'});
@@ -309,8 +324,8 @@ function renderCalendar() {
     const marked = currentUser.markedDates || [];
     for(let d=1; d<=end; d++) {
         const dStr = `${y}-${m+1}-${d}`;
-        const hasNote = (currentUser.markedDates || []).find(x => x.date === dStr);
-        grid.innerHTML += `<div class="calendar-day ${hasNote ? 'marked' : ''}" onclick="openNote('${dStr}')">${d}</div>`;
+        const entry = (currentUser.markedDates || []).find(x => x.date === dStr);
+        grid.innerHTML += `<div class="calendar-day ${entry ? 'marked' : ''}" onclick="openNote('${dStr}')">${d}</div>`;
     }
 }
 function openNote(d) { selectedDateStr = d; document.getElementById('calendar-modal').style.display='grid'; }
@@ -318,7 +333,9 @@ function closeCalendarModal() { document.getElementById('calendar-modal').style.
 async function saveDayNote() {
     const n = document.getElementById('day-note-input').value.trim();
     if(!currentUser.markedDates) currentUser.markedDates = [];
-    currentUser.markedDates.push({date: selectedDateStr, note: n});
+    const idx = currentUser.markedDates.findIndex(x => x.date === selectedDateStr);
+    if(idx > -1) { if(!n) currentUser.markedDates.splice(idx, 1); else currentUser.markedDates[idx].note = n; }
+    else { currentUser.markedDates.push({date: selectedDateStr, note: n}); }
     renderCalendar(); await saveState(); closeCalendarModal();
 }
 function changeMonth(d) { currentNavDate.setMonth(currentNavDate.getMonth() + d); renderCalendar(); }
@@ -326,7 +343,7 @@ function changeMonth(d) { currentNavDate.setMonth(currentNavDate.getMonth() + d)
 function uploadAvatar(input) {
     if (input.files[0]) {
         const r = new FileReader();
-        r.onload = (e) => { currentUser.avatar = e.target.result; document.getElementById('imagePreview').src = e.target.result; saveState(); };
+        r.onload = (e) => { currentUser.avatar = e.target.result; document.getElementById('imagePreview').src = e.target.result; saveState(); showRealmProclamation("Portrait Updated."); };
         r.readAsDataURL(input.files[0]);
     }
 }
@@ -336,7 +353,6 @@ function showContent(id, el) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById(id).classList.add('active'); el.classList.add('active');
 }
-
 function renderHallOfFame() {
     const list = document.getElementById('ach-list'); if(!list) return; list.innerHTML = "";
     (currentUser.achievements || []).forEach((ach) => {

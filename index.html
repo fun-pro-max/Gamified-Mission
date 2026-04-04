@@ -3,19 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuestLog | Eternal Realm</title>
+    <title>QuestLog | Eternal Adventure</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=MedievalSharp&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
     <link rel="manifest" href="manifest.json">
 </head>
 <body>
-    <!-- 1. IDENTITY VERIFICATION -->
+
+    <!-- REALM PROCLAMATION (CUSTOM NOTIFICATION) -->
+    <div id="realm-notif" class="notif-overlay">
+        <div class="notif-scroll">
+            <div class="wax-seal-mini">QL</div>
+            <p id="notif-text">The Kingdom Awaits...</p>
+        </div>
+    </div>
+
+    <!-- 1. IDENTITY VERIFICATION (FIRST FLOW) -->
     <div id="auth-overlay" class="auth-modal">
         <div class="auth-box stone-border">
-            <div class="wax-seal">QL</div>
+            <div class="wax-seal-large">QL</div>
             <h2>Identity Verification</h2>
-            <p>Present your name and passkey to enter the Kingdom.</p>
+            <p>Speak your name and key to enter the Realm.</p>
             <div class="medieval-input-container">
                 <i class="fas fa-user-shield"></i>
                 <input type="text" id="username" placeholder="Hero Name" autocomplete="off">
@@ -24,11 +33,11 @@
                 <i class="fas fa-key"></i>
                 <input type="password" id="password" placeholder="Passkey">
             </div>
-            <button onclick="handleAuth()" class="medieval-btn wide">Initialize Session</button>
+            <button onclick="handleAuth()" class="medieval-btn wide">Enter Realm</button>
         </div>
     </div>
 
-    <!-- 2. SIDEBAR -->
+    <!-- 2. SIDEBAR NAVIGATION -->
     <div class="sidebar">
         <div class="brand"><i class="fas fa-dragon"></i> QuestLog</div>
         <nav class="nav-links">
@@ -45,12 +54,12 @@
     </div>
 
     <div class="main-content">
-        <!-- 3. DASHBOARD -->
+        <!-- 3. DASHBOARD (PASSPORT ALIGNMENT) -->
         <div class="content active" id="dashboard">
             <div class="dashboard-flex">
                 <div class="profile-section">
                     <header><h1>Hero Profile</h1></header>
-                    <div class="profile-card hero-profile-layout">
+                    <div class="profile-card hero-profile-layout stone-border">
                         <div class="avatar-container">
                             <img id="imagePreview" src="">
                             <div class="upload-overlay" onclick="document.getElementById('imageUpload').click();"><i class="fas fa-camera"></i></div>
@@ -67,56 +76,60 @@
                             </div>
                         </div>
                     </div>
-                    <div class="profile-card calendar-card">
+
+                    <!-- CALENDAR -->
+                    <div class="profile-card calendar-card stone-border">
                         <div class="calendar-header">
-                            <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                            <button class="cal-nav-btn" onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
                             <h3 id="calendarMonth">Month</h3>
-                            <button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
+                            <button class="cal-nav-btn" onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
                         </div>
                         <div class="calendar-weekdays"><div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div></div>
                         <div id="calendarGrid" class="calendar-grid"></div>
                     </div>
                 </div>
-                <aside class="event-panel">
+
+                <!-- ADMIN PROCLAMATIONS -->
+                <aside class="event-panel stone-border">
                     <h3><i class="fas fa-feather-pointed"></i> Proclamations</h3>
                     <div id="event-list"></div>
                     <div id="admin-controls" class="admin-only">
                         <hr class="panel-divider">
                         <p class="admin-label">CREATOR CONSOLE</p>
-                        <input type="text" id="evTitle" placeholder="Event Title" class="medieval-input-mini">
-                        <input type="number" id="evGold" placeholder="Gold" class="medieval-input-mini">
+                        <input type="text" id="evTitle" placeholder="Proclamation Title" class="medieval-input-mini">
+                        <input type="number" id="evGold" placeholder="Gold Bounty" class="medieval-input-mini">
                         <button onclick="postEvent()" class="medieval-btn wide">Post Event</button>
                     </div>
                 </aside>
             </div>
         </div>
 
-        <!-- 4. ALCHEMIST -->
+        <!-- 4. ALCHEMIST CHAMBER (QUIZ) -->
         <div class="content" id="alchemist">
             <header><h1>Alchemist's Chamber</h1></header>
-            <div class="profile-card game-box" id="quiz-start">
+            <div class="profile-card game-box stone-border" id="quiz-start">
                 <i class="fas fa-vial fa-4x" style="color:var(--gold)"></i>
                 <h2>Mental Transmutation</h2>
-                <p>The Alchemist randomly picks 10 riddles. Score 8/10 to earn 25 XP.</p>
+                <p>Score 8/10 on the Alchemist's random riddles to earn 25 XP.</p>
                 <button onclick="startQuiz()" class="medieval-btn">Begin Study</button>
             </div>
-            <div class="profile-card game-box" id="quiz-play" style="display:none;">
+            <div class="profile-card game-box stone-border" id="quiz-play" style="display:none;">
                 <h2 id="quiz-q">Question?</h2>
                 <div id="quiz-options" class="quiz-grid"></div>
-                <p id="quiz-p" class="admin-label"></p>
+                <p id="quiz-p" class="admin-label" style="margin-top:20px;"></p>
             </div>
         </div>
 
-        <!-- 5. ARCHER -->
+        <!-- 5. ARCHER RANGE (STABLE ENGINE) -->
         <div class="content" id="archer">
             <header><h1>Archer's Range</h1></header>
-            <div class="profile-card game-box" id="archer-start">
-                <i class="fas fa-bullseye fa-4x" style="color:var(--gold); margin-bottom: 15px;"></i>
+            <div class="profile-card game-box stone-border" id="archer-start">
+                <i class="fas fa-crosshairs fa-4x" style="color:var(--gold); margin-bottom: 15px;"></i>
                 <h2>Trial of Elements</h2>
-                <p>Repeat the magical sequence to earn 25 XP.</p>
+                <p>Observe the runes. Repeat the pattern perfectly to earn 25 XP.</p>
                 <button onclick="startArcher()" class="medieval-btn">Begin Trial</button>
             </div>
-            <div class="profile-card game-box" id="archer-play" style="display:none;">
+            <div class="profile-card game-box stone-border" id="archer-play" style="display:none;">
                 <h3 id="archer-status" style="color: var(--gold); margin-bottom: 10px;">WATCH...</h3>
                 <div class="rune-grid" id="rune-grid">
                     <div class="rune-stone fire" data-id="0"><i class="fas fa-fire"></i></div>
@@ -128,12 +141,12 @@
             </div>
         </div>
 
-        <!-- 6. BOSS RAIDS -->
+        <!-- 6. BOSS RAIDS (ELONGATED INPUT) -->
         <div class="content" id="boss-fights">
-            <header><h1>Boss Raids</h1></header>
-            <div class="medieval-input-group-elongated">
+            <header><h1>Legendary Boss Raids</h1></header>
+            <div class="medieval-input-group-elongated stone-border">
                 <i class="fas fa-skull-crossbones"></i>
-                <input type="text" id="bIn" placeholder="Identify the threat to the Kingdom...">
+                <input type="text" id="bIn" placeholder="Identify the ancient threat to the Kingdom...">
                 <button onclick="addTask('boss')" class="medieval-action-btn">Sanction Raid</button>
             </div>
             <div id="boss-list" class="task-grid"></div>
@@ -141,39 +154,42 @@
 
         <!-- 7. APPROVALS -->
         <div class="content" id="admin-requests">
-            <header><h1>High Command Approvals</h1></header>
+            <header><h1>Approvals Hub</h1></header>
             <div id="approval-list" class="task-grid"></div>
         </div>
 
-        <!-- 8. GUILDS -->
+        <!-- 8. GUILD HALL -->
         <div class="content" id="guilds">
-            <header><h1>Guild Hall</h1></header>
+            <header><h1>Guild Sanctuary</h1></header>
             <div id="guild-create-zone">
-                <div class="profile-card hero-centered">
+                <div class="profile-card hero-centered stone-border">
                     <i class="fas fa-shield-halved fa-4x" style="color:var(--gold); margin-bottom:20px;"></i>
                     <h3>Establish a Dynasty</h3>
-                    <p>Level 10 and 1,000 Gold required.</p>
-                    <input type="text" id="newGName" placeholder="Guild Name" class="medieval-input-mini" style="max-width: 300px; margin: 15px 0;">
-                    <button class="medieval-btn" onclick="createGuild()">Found Guild</button>
+                    <p>Level 10 and 1,000 Gold required to found a Guild.</p>
+                    <div class="medieval-input-container" style="width:100%; max-width:400px;">
+                        <input type="text" id="newGName" placeholder="Guild Name">
+                    </div>
+                    <button class="medieval-btn" onclick="createGuild()" style="margin-top:20px;">Found Guild</button>
                 </div>
             </div>
             <div id="active-guild" style="display: none;">
-                <div class="profile-card hero-profile-layout" style="border-top: 4px solid var(--danger);">
+                <div class="profile-card hero-profile-layout stone-border" style="border-top: 4px solid var(--danger);">
                     <div class="wax-seal" id="gInitial">G</div>
                     <div class="hero-info-stack">
                         <h2 id="gTitle">Guild Name</h2>
-                        <div class="info-row"><span class="info-label">Status:</span> <span id="roleText" class="info-value">Member</span></div>
+                        <div class="info-row"><span id="roleText" class="info-value">Leader</span></div>
                     </div>
-                    <button id="request-war-btn" class="medieval-btn mini leader-only danger" onclick="requestWar()">Appeal for War</button>
+                    <button id="request-war-btn" class="medieval-btn mini danger leader-only" onclick="requestWar()">Appeal for War</button>
                 </div>
                 <div class="guild-grid">
                     <div class="profile-card vertical-align">
-                        <h3>Internal Duels</h3>
+                        <h3>Guild Training</h3>
                         <div style="display:flex; gap:10px; margin-top:10px; width:100%;">
                             <button class="medieval-btn mini" style="flex:1" onclick="showContent('alchemist', this)">Alchemist</button>
                             <button class="medieval-btn mini" style="flex:1" onclick="showContent('archer', this)">Archer</button>
                         </div>
                     </div>
+                    <!-- Chat can be added here if desired -->
                 </div>
             </div>
         </div>
@@ -201,9 +217,9 @@
     <div id="calendar-modal" class="modal-overlay" style="display:none;">
         <div class="parchment-modal stone-border">
             <h3 id="modal-date-title">Date</h3>
-            <textarea id="day-note-input" placeholder="Write your daily scroll..."></textarea>
+            <textarea id="day-note-input" placeholder="Write your scroll..."></textarea>
             <div class="modal-btns">
-                <button onclick="saveDayNote()" class="medieval-btn mini">Save</button>
+                <button onclick="saveDayNote()" class="medieval-btn mini">Save Scroll</button>
                 <button onclick="closeCalendarModal()" class="medieval-btn mini danger">Close</button>
             </div>
         </div>
@@ -211,6 +227,7 @@
 
     <input type="file" id="evidenceUpload" accept="image/*" style="display:none;">
 
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="script.js"></script>
