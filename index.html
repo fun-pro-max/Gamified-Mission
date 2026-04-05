@@ -3,231 +3,257 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuestLog | Eternal Adventure</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=MedievalSharp&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>QuestLog | Sovereign Eternal Realm</title>
+    <!-- Sovereign Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=MedievalSharp&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
     <link rel="manifest" href="manifest.json">
 </head>
 <body>
 
-    <!-- REALM PROCLAMATION (CUSTOM NOTIFICATION) -->
+    <!-- 🔱 MASTER NOTIFICATION ENGINE -->
     <div id="realm-notif" class="notif-overlay">
         <div class="notif-scroll">
             <div class="wax-seal-mini">QL</div>
-            <p id="notif-text">The Kingdom Awaits...</p>
+            <p id="notif-text">Establishing connection to the High Command...</p>
         </div>
     </div>
 
-    <!-- 1. IDENTITY VERIFICATION (FIRST FLOW) -->
+    <!-- 🔱 THE GATEKEEPER: AUTHENTICATION LOCK (FIRST FLOW) -->
     <div id="auth-overlay" class="auth-modal">
         <div class="auth-box stone-border">
             <div class="wax-seal-large">QL</div>
             <h2>Identity Verification</h2>
-            <p>Speak your name and key to enter the Realm.</p>
+            <p>Speaker your Hero Name and provide the Secret Passkey to reveal the Kingdom's map.</p>
+            
             <div class="medieval-input-container">
                 <i class="fas fa-user-shield"></i>
-                <input type="text" id="username" placeholder="Hero Name" autocomplete="off">
+                <input type="text" id="username" placeholder="Identify yourself, Hero..." autocomplete="off">
             </div>
+            
             <div class="medieval-input-container">
                 <i class="fas fa-key"></i>
-                <input type="password" id="password" placeholder="Passkey">
+                <input type="password" id="password" placeholder="The Hidden Passkey...">
             </div>
-            <button onclick="handleAuth()" class="medieval-btn wide">Enter Realm</button>
+            
+            <button onclick="handleAuth()" class="medieval-btn wide animate-glow">Initialize Eternal Session</button>
+            <div class="small-label" style="margin-top: 20px; opacity: 0.5;">Identity lock active: Data persists through the cloud.</div>
         </div>
     </div>
 
-    <!-- 2. SIDEBAR NAVIGATION -->
-    <div class="sidebar">
-        <div class="brand"><i class="fas fa-dragon"></i> QuestLog</div>
-        <nav class="nav-links">
-            <div class="tab active" onclick="showContent('dashboard', this)"><i class="fas fa-map"></i> <span>Dashboard</span></div>
-            <div class="tab" onclick="showContent('alchemist', this)"><i class="fas fa-flask"></i> <span>Alchemist</span></div>
-            <div class="tab" onclick="showContent('archer', this)"><i class="fas fa-bullseye"></i> <span>Archer</span></div>
-            <div class="tab" onclick="showContent('boss-fights', this)"><i class="fas fa-skull"></i> <span>Bosses</span></div>
-            <div id="guild-tab-link" class="tab" onclick="showContent('guilds', this)"><i class="fas fa-shield-halved"></i> <span>Guilds</span></div>
-            <div id="admin-tab-link" class="tab" onclick="showContent('admin-requests', this)" style="display:none"><i class="fas fa-scroll"></i> <span>Approvals</span></div>
-            <div id="war-front-link" class="tab war-tab-highlight" onclick="showContent('war-front', this)" style="display:none"><i class="fas fa-fire"></i> <span>War Front</span></div>
-            <div class="tab" onclick="showContent('achievements', this)"><i class="fas fa-trophy"></i> <span>Hall of Fame</span></div>
-        </nav>
-        <div class="sidebar-id-tag" id="sidebar-id"></div>
-    </div>
+    <!-- 🔱 THE MAIN REALM (REVEALED ONLY AFTER AUTH) -->
+    <div id="app-container" style="display: none;">
+        
+        <!-- Mobile Command Menu -->
+        <button class="mobile-menu-btn" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
 
-    <div class="main-content">
-        <!-- 3. DASHBOARD (PASSPORT ALIGNMENT) -->
-        <div class="content active" id="dashboard">
-            <div class="dashboard-flex">
-                <div class="profile-section">
-                    <header><h1>Hero Profile</h1></header>
-                    <div class="profile-card hero-profile-layout stone-border">
-                        <div class="avatar-container">
-                            <img id="imagePreview" src="">
-                            <div class="upload-overlay" onclick="document.getElementById('imageUpload').click();"><i class="fas fa-camera"></i></div>
-                            <input type="file" id="imageUpload" accept="image/*" onchange="uploadAvatar(this)" style="display:none;">
-                        </div>
-                        <div class="hero-info-stack">
-                            <h2 id="heroName">Hero</h2>
-                            <div class="info-row gold-display"><i class="fas fa-coins"></i> <span id="goldCount">0</span></div>
-                            <div class="info-row"><span class="info-label">Rank:</span> <span id="rankTitle" class="info-value">Novice</span></div>
-                            <div class="info-row"><span class="info-label">Level:</span> <span id="displayLevel" class="info-value">1</span></div>
-                            <div class="xp-container-stack">
-                                <div class="xp-header"><span>Experience</span><span id="progressPercent">0%</span></div>
-                                <div class="xp-bar-outer"><div id="lvlBar" class="xp-bar-fill"></div></div>
+        <!-- Sidebar Navigation (Responsive Drawer) -->
+        <div class="sidebar" id="main-sidebar">
+            <div class="sidebar-header">
+                <div class="brand"><i class="fas fa-dragon"></i> QuestLog</div>
+                <button class="close-sidebar-btn" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+            </div>
+            <nav class="nav-links">
+                <div class="tab active" onclick="showContent('dashboard', this)"><i class="fas fa-map"></i> <span>Dashboard</span></div>
+                <div class="tab" onclick="showContent('alchemist', this)"><i class="fas fa-flask"></i> <span>Alchemist</span></div>
+                <div class="tab" onclick="showContent('archer', this)"><i class="fas fa-bullseye"></i> <span>Archer's Range</span></div>
+                <div class="tab" onclick="showContent('boss-fights', this)"><i class="fas fa-skull-crossbones"></i> <span>Boss Raids</span></div>
+                <div id="guild-tab-link" class="tab" onclick="showContent('guilds', this)"><i class="fas fa-shield-halved"></i> <span>Guild Hall</span></div>
+                <div id="admin-tab-link" class="tab" onclick="showContent('admin-requests', this)" style="display:none"><i class="fas fa-scroll-old"></i> <span>Command Requests</span></div>
+                <div id="war-front-link" class="tab war-tab-highlight" onclick="showContent('war-front', this)" style="display:none"><i class="fas fa-fire-glow"></i> <span>The Battlefield</span></div>
+                <div class="tab" onclick="showContent('achievements', this)"><i class="fas fa-trophy"></i> <span>Hall of Fame</span></div>
+            </nav>
+            <div class="sidebar-id-tag" id="sidebar-id">SYNCING ID...</div>
+        </div>
+
+        <div class="main-content">
+            <!-- 🗺️ SECTION: DASHBOARD (PASSPORT ALIGNED) -->
+            <div class="content active" id="dashboard">
+                <div class="dashboard-flex">
+                    <div class="profile-section">
+                        <header><h1>Kingdom Ledger</h1></header>
+                        
+                        <div class="profile-card hero-profile-layout stone-border">
+                            <div class="avatar-container" onclick="document.getElementById('imageUpload').click();">
+                                <img id="imagePreview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix">
+                                <div class="upload-overlay">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                                <input type="file" id="imageUpload" accept="image/*" onchange="uploadAvatar(this)" style="display:none;">
+                            </div>
+                            <div class="hero-info-stack">
+                                <h2 id="heroName">Gourav</h2>
+                                <div class="info-row gold-display"><i class="fas fa-coins"></i> <span id="goldCount">9999</span></div>
+                                <div class="info-row">
+                                    <span class="info-label">Title:</span> 
+                                    <span id="rankTitle" class="info-value">Demigod Adventurer</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Power:</span> 
+                                    <span id="displayLevel" class="info-value">99</span>
+                                </div>
+                                <div class="xp-container-stack">
+                                    <div class="xp-header"><span>Completion Rate: </span><span id="progressPercent"> 0% </span></div>
+                                    <div class="xp-bar-outer"><div id="lvlBar" class="xp-bar-fill"></div></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- CALENDAR -->
-                    <div class="profile-card calendar-card stone-border">
-                        <div class="calendar-header">
-                            <button class="cal-nav-btn" onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
-                            <h3 id="calendarMonth">Month</h3>
-                            <button class="cal-nav-btn" onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
-                        </div>
-                        <div class="calendar-weekdays"><div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div></div>
-                        <div id="calendarGrid" class="calendar-grid"></div>
-                    </div>
-                </div>
-
-                <!-- ADMIN PROCLAMATIONS -->
-                <aside class="event-panel stone-border">
-                    <h3><i class="fas fa-feather-pointed"></i> Proclamations</h3>
-                    <div id="event-list"></div>
-                    <div id="admin-controls" class="admin-only">
-                        <hr class="panel-divider">
-                        <p class="admin-label">CREATOR CONSOLE</p>
-                        <input type="text" id="evTitle" placeholder="Proclamation Title" class="medieval-input-mini">
-                        <input type="number" id="evGold" placeholder="Gold Bounty" class="medieval-input-mini">
-                        <button onclick="postEvent()" class="medieval-btn wide">Post Event</button>
-                    </div>
-                </aside>
-            </div>
-        </div>
-
-        <!-- 4. ALCHEMIST CHAMBER (QUIZ) -->
-        <div class="content" id="alchemist">
-            <header><h1>Alchemist's Chamber</h1></header>
-            <div class="profile-card game-box stone-border" id="quiz-start">
-                <i class="fas fa-vial fa-4x" style="color:var(--gold)"></i>
-                <h2>Mental Transmutation</h2>
-                <p>Score 8/10 on the Alchemist's random riddles to earn 25 XP.</p>
-                <button onclick="startQuiz()" class="medieval-btn">Begin Study</button>
-            </div>
-            <div class="profile-card game-box stone-border" id="quiz-play" style="display:none;">
-                <h2 id="quiz-q">Question?</h2>
-                <div id="quiz-options" class="quiz-grid"></div>
-                <p id="quiz-p" class="admin-label" style="margin-top:20px;"></p>
-            </div>
-        </div>
-
-        <!-- 5. ARCHER RANGE (STABLE ENGINE) -->
-        <div class="content" id="archer">
-            <header><h1>Archer's Range</h1></header>
-            <div class="profile-card game-box stone-border" id="archer-start">
-                <i class="fas fa-crosshairs fa-4x" style="color:var(--gold); margin-bottom: 15px;"></i>
-                <h2>Trial of Elements</h2>
-                <p>Observe the runes. Repeat the pattern perfectly to earn 25 XP.</p>
-                <button onclick="startArcher()" class="medieval-btn">Begin Trial</button>
-            </div>
-            <div class="profile-card game-box stone-border" id="archer-play" style="display:none;">
-                <h3 id="archer-status" style="color: var(--gold); margin-bottom: 10px;">WATCH...</h3>
-                <div class="rune-grid" id="rune-grid">
-                    <div class="rune-stone fire" data-id="0"><i class="fas fa-fire"></i></div>
-                    <div class="rune-stone water" data-id="1"><i class="fas fa-tint"></i></div>
-                    <div class="rune-stone earth" data-id="2"><i class="fas fa-leaf"></i></div>
-                    <div class="rune-stone air" data-id="3"><i class="fas fa-bolt"></i></div>
-                </div>
-                <p id="archer-r" class="admin-label"></p>
-            </div>
-        </div>
-
-        <!-- 6. BOSS RAIDS (ELONGATED INPUT) -->
-        <div class="content" id="boss-fights">
-            <header><h1>Legendary Boss Raids</h1></header>
-            <div class="medieval-input-group-elongated stone-border">
-                <i class="fas fa-skull-crossbones"></i>
-                <input type="text" id="bIn" placeholder="Identify the ancient threat to the Kingdom...">
-                <button onclick="addTask('boss')" class="medieval-action-btn">Sanction Raid</button>
-            </div>
-            <div id="boss-list" class="task-grid"></div>
-        </div>
-
-        <!-- 7. APPROVALS -->
-        <div class="content" id="admin-requests">
-            <header><h1>Approvals Hub</h1></header>
-            <div id="approval-list" class="task-grid"></div>
-        </div>
-
-        <!-- 8. GUILD HALL -->
-        <div class="content" id="guilds">
-            <header><h1>Guild Sanctuary</h1></header>
-            <div id="guild-create-zone">
-                <div class="profile-card hero-centered stone-border">
-                    <i class="fas fa-shield-halved fa-4x" style="color:var(--gold); margin-bottom:20px;"></i>
-                    <h3>Establish a Dynasty</h3>
-                    <p>Level 10 and 1,000 Gold required to found a Guild.</p>
-                    <div class="medieval-input-container" style="width:100%; max-width:400px;">
-                        <input type="text" id="newGName" placeholder="Guild Name">
-                    </div>
-                    <button class="medieval-btn" onclick="createGuild()" style="margin-top:20px;">Found Guild</button>
-                </div>
-            </div>
-            <div id="active-guild" style="display: none;">
-                <div class="profile-card hero-profile-layout stone-border" style="border-top: 4px solid var(--danger);">
-                    <div class="wax-seal" id="gInitial">G</div>
-                    <div class="hero-info-stack">
-                        <h2 id="gTitle">Guild Name</h2>
-                        <div class="info-row"><span id="roleText" class="info-value">Leader</span></div>
-                    </div>
-                    <button id="request-war-btn" class="medieval-btn mini danger leader-only" onclick="requestWar()">Appeal for War</button>
-                </div>
-                <div class="guild-grid">
-                    <div class="profile-card vertical-align">
-                        <h3>Guild Training</h3>
-                        <div style="display:flex; gap:10px; margin-top:10px; width:100%;">
-                            <button class="medieval-btn mini" style="flex:1" onclick="showContent('alchemist', this)">Alchemist</button>
-                            <button class="medieval-btn mini" style="flex:1" onclick="showContent('archer', this)">Archer</button>
+                        <!-- 🗺️ SECTION: THE REALM CALENDAR -->
+                        <div class="profile-card calendar-card stone-border">
+                            <div class="calendar-header">
+                                <button class="cal-nav-btn" onclick="changeMonth(-1)"><i class="fas fa-arrow-left"></i></button>
+                                <h3 id="calendarMonth">Month</h3>
+                                <button class="cal-nav-btn" onclick="changeMonth(1)"><i class="fas fa-arrow-right"></i></button>
+                            </div>
+                            <div class="calendar-weekdays"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div>
+                            <div id="calendarGrid" class="calendar-grid"></div>
                         </div>
                     </div>
-                    <!-- Chat can be added here if desired -->
+
+                    <!-- 🗺️ ASIDE: PROCLAMATIONS PANEL (RIGHT COLUMN) -->
+                    <aside class="event-panel stone-border">
+                        <h3><i class="fas fa-scroll-old"></i> Kingdom Events</h3>
+                        <div id="event-list"></div>
+                        <div id="admin-controls" class="admin-only">
+                            <hr class="panel-divider">
+                            <p class="admin-label">CREATOR CONSOLE</p>
+                            <div class="medieval-input-container-mini">
+                                <input type="text" id="evTitle" placeholder="Proclamation Title...">
+                            </div>
+                            <div class="medieval-input-container-mini">
+                                <input type="number" id="evGold" placeholder="Gold Bounty Reward...">
+                            </div>
+                            <button onclick="postEvent()" class="medieval-btn wide">Issue Proclamation</button>
+                        </div>
+                    </aside>
                 </div>
             </div>
-        </div>
 
-        <!-- 9. WAR FRONT -->
-        <div class="content" id="war-front">
-            <header><h1>Battlefront</h1></header>
-            <div class="profile-card stone-border battle-box">
-                <h2 id="war-guild-name">Active War</h2>
-                <div class="parchment-box">
-                    <p id="war-instructions-text">Waiting for strategy...</p>
+            <!-- 🏛️ SECTION: THE ALCHEMIST -->
+            <div class="content" id="alchemist">
+                <header><h1>Alchemist’s Chamber</h1></header>
+                <div class="profile-card game-box stone-border">
+                    <div id="quiz-start">
+                        <i class="fas fa-mortar-pestle fa-4x" style="color:var(--gold)"></i>
+                        <h2>Transmutation of Mind</h2>
+                        <p>Complete 10 riddles randomly generated. Reach 80% accuracy to earn 25 XP.</p>
+                        <button onclick="startQuiz()" class="medieval-btn">Step into Circle</button>
+                    </div>
+                    <div id="quiz-play" style="display:none; width: 100%;">
+                        <h2 id="quiz-q">?</h2>
+                        <div id="quiz-options" class="quiz-grid"></div>
+                        <p id="quiz-p" class="admin-label"></p>
+                    </div>
                 </div>
-                <button class="medieval-btn admin-only" onclick="declareWinner()">Declare Victory</button>
             </div>
-        </div>
 
-        <!-- 10. HALL OF FAME -->
-        <div class="content" id="achievements">
-            <header><h1>Hall of Fame</h1></header>
-            <div id="ach-list" class="achievement-grid"></div>
+            <!-- 🏹 SECTION: ARCHER'S RANGE -->
+            <div class="content" id="archer">
+                <header><h1>Archer’s Range</h1></header>
+                <div class="profile-card game-box stone-border">
+                    <div id="archer-start">
+                        <i class="fas fa-crosshairs fa-4x" style="color:var(--gold); margin-bottom: 20px;"></i>
+                        <h2>Trial of Focus</h2>
+                        <p>Track the elemental sequence of magical runes to prove your accuracy.</p>
+                        <button onclick="startArcher()" class="medieval-btn">Begin Aim</button>
+                    </div>
+                    <div id="archer-play" style="display:none; width: 100%;">
+                        <h3 id="archer-status" style="color: var(--gold); margin-bottom: 20px;">WATCH CAREFULLY...</h3>
+                        <div class="rune-grid" id="rune-grid">
+                            <div class="rune-stone fire" data-id="0"><i class="fas fa-fire"></i></div>
+                            <div class="rune-stone water" data-id="1"><i class="fas fa-tint"></i></div>
+                            <div class="rune-stone earth" data-id="2"><i class="fas fa-leaf"></i></div>
+                            <div class="rune-stone air" data-id="3"><i class="fas fa-bolt"></i></div>
+                        </div>
+                        <p id="archer-r" class="admin-label"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 💀 SECTION: BOSSES -->
+            <div class="content" id="boss-fights">
+                <header><h1>Threat Assessment: Boss Raids</h1></header>
+                <div class="medieval-input-group-elongated stone-border">
+                    <i class="fas fa-skull"></i>
+                    <input type="text" id="bIn" placeholder="Identify the ancient threat to the Kingdom...">
+                    <button onclick="addTask('boss')" class="medieval-action-btn">Log Raid</button>
+                </div>
+                <div id="boss-list" class="task-grid"></div>
+            </div>
+
+            <!-- 🏰 SECTION: GUILDS -->
+            <div class="content" id="guilds">
+                <header><h1>Sovereign Guild Hall</h1></header>
+                <div id="guild-create-zone">
+                    <div class="profile-card hero-centered stone-border">
+                        <i class="fas fa-shield-halved fa-5x" style="color:var(--gold); margin-bottom:25px;"></i>
+                        <h3>Found your Legacy</h3>
+                        <p>Founding a House requires <strong>Level 10</strong> and an offering of <strong>1,000 Gold</strong>.</p>
+                        <div class="medieval-input-container" style="width: 100%; max-width: 450px;">
+                            <input type="text" id="newGName" placeholder="Eternal House Title...">
+                        </div>
+                        <button class="medieval-btn" onclick="createGuild()" style="margin-top: 25px;">Seal the Charter</button>
+                    </div>
+                </div>
+                <div id="active-guild" style="display: none;">
+                    <div class="profile-card hero-profile-layout stone-border" style="border-top: 5px solid var(--danger);">
+                        <div class="wax-seal-guild" id="gInitial">G</div>
+                        <div class="hero-info-stack">
+                            <h2 id="gTitle">Current Guild</h2>
+                            <p id="roleText">Rank: Command Sergeant</p>
+                        </div>
+                        <button id="request-war-btn" class="medieval-btn mini danger leader-only" onclick="requestWar()">Request Sanction</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 📑 SECTION: APPROVALS -->
+            <div class="content" id="admin-requests">
+                <header><h1>The Approvals Sanctum</h1></header>
+                <div id="approval-list" class="task-grid"></div>
+            </div>
+
+            <!-- ⚔️ SECTION: WAR FRONT -->
+            <div class="content" id="war-front">
+                <header><h1>War Front Battlefield</h1></header>
+                <div class="profile-card stone-border battle-box-container">
+                    <h2 id="war-guild-name">Conflict Resolution</h2>
+                    <div class="parchment-inner">
+                        <h4 style="color:#000; font-family:'MedievalSharp';">Administrative Instructions:</h4>
+                        <p id="war-instructions-text" style="color:#333;">Standing by for deployment strategy...</p>
+                    </div>
+                    <button class="medieval-btn admin-only" onclick="declareWinner()" style="background:#5e0000; border-color: #ff0000; margin-top:20px;">Declare Decisive Victory</button>
+                </div>
+            </div>
+
+            <!-- 🏆 SECTION: HALL OF FAME -->
+            <div class="content" id="achievements">
+                <header><h1>The Eternal Hall of Fame</h1></header>
+                <div id="ach-list" class="achievement-grid"></div>
+            </div>
         </div>
     </div>
 
-    <!-- Modals -->
-    <div id="calendar-modal" class="modal-overlay" style="display:none;">
+    <!-- 📔 PARCHMENT MODAL (CALENDAR POPUP) -->
+    <div id="calendar-modal" class="modal-overlay">
         <div class="parchment-modal stone-border">
-            <h3 id="modal-date-title">Date</h3>
-            <textarea id="day-note-input" placeholder="Write your scroll..."></textarea>
+            <h3 id="modal-date-title">Royal Log</h3>
+            <textarea id="day-note-input" placeholder="Etch your consistency records into the Kingdom scrolls..."></textarea>
             <div class="modal-btns">
-                <button onclick="saveDayNote()" class="medieval-btn mini">Save Scroll</button>
-                <button onclick="closeCalendarModal()" class="medieval-btn mini danger">Close</button>
+                <button onclick="saveDayNote()" class="medieval-btn mini">Etch Progress</button>
+                <button onclick="closeCalendarModal()" class="medieval-btn mini danger">Burn Record</button>
             </div>
         </div>
     </div>
 
+    <!-- Hidden Proof Input -->
     <input type="file" id="evidenceUpload" accept="image/*" style="display:none;">
 
-    <!-- Firebase -->
+    <!-- Logic Engine Links -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="script.js"></script>

@@ -1,131 +1,224 @@
+/** 
+ * QUESTLOG MASTER STYLESHEET
+ * Strict Medieval/Adventure Theme with Mobile Grid Drawer Logic
+ */
+
 :root {
-    --bg-dark: #0a0e17;
-    --card-bg: #161d2f;
-    --sidebar-bg: #111827;
+    --bg-dark: #0a0c10;
+    --card-bg: #141b2b;
+    --sidebar-bg: #0e121e;
     --gold: #d4af37;
-    --gold-glow: rgba(212, 175, 55, 0.4);
-    --parchment: #f5e6be;
+    --gold-glow: rgba(212, 175, 55, 0.45);
+    --danger: #9c0000;
+    --success: #15803d;
     --text-main: #f1f5f9;
     --text-dim: #94a3b8;
-    --danger: #ef4444;
-    --success: #22c55e;
+    --parchment: #f4e3c1;
     --glass: rgba(255, 255, 255, 0.05);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Poppins', sans-serif; background: var(--bg-dark); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
-h1, h2, h3, h4, .brand { font-family: 'Cinzel', serif; color: var(--gold); letter-spacing: 1px; }
 
-/* --- SIDEBAR --- */
-.sidebar { width: 260px; background: var(--sidebar-bg); display: flex; flex-direction: column; border-right: 3px solid var(--gold); z-index: 100; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
-.brand { padding: 30px 20px; font-size: 1.5rem; text-align: center; border-bottom: 1px solid rgba(212,175,55,0.2); }
-.tab { padding: 15px 25px; cursor: pointer; color: var(--text-dim); display: flex; align-items: center; gap: 15px; transition: 0.3s; }
-.tab.active { background: rgba(212, 175, 55, 0.1); color: var(--gold); border-left: 4px solid var(--gold); }
-.sidebar-id-tag { margin-top: auto; padding: 20px; font-size: 0.7rem; color: var(--gold); opacity: 0.7; border-top: 1px solid var(--glass); }
+/* ⚜️ Sovereign Font Mastery */
+h1, h2, h3, h4, .brand { font-family: 'Cinzel', serif; color: var(--gold); letter-spacing: 2px; }
 
-/* --- CUSTOM NOTIFICATION SYSTEM --- */
-.notif-overlay {
-    position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
-    width: 400px; z-index: 10000; transition: top 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+/* 🛡️ GATEKEEPER OVERLAY (AUTH) */
+.auth-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, #1b263b 0%, #000 100%); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.auth-box { background: var(--card-bg); padding: 50px; width: 500px; text-align: center; border-radius: 4px; }
+.stone-border { border: 6px ridge var(--gold) !important; box-shadow: 0 10px 50px rgba(0,0,0,0.9); }
+.wax-seal-large { width: 85px; height: 85px; background: #660000; color: white; border-radius: 50%; display: grid; place-items: center; margin: 0 auto 30px; font-family: 'Cinzel'; border: 4px solid #330000; font-size: 2.2rem; box-shadow: 2px 5px 15px #000; }
+
+/* 🛡️ CUSTOM THEMED INPUTS (NO DEFAULT APPEARANCE) */
+input, textarea {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    color: white !important;
+    font-family: 'MedievalSharp', cursive !important;
+    width: 100%;
 }
-.notif-overlay.active { top: 30px; }
-.notif-scroll {
-    background: var(--parchment); color: #3e2723; padding: 25px; border: 8px solid #d7ccc8;
-    border-image: url('https://www.transparenttextures.com/patterns/old-map.png') 30 stretch;
-    border-radius: 4px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); text-align: center; position: relative;
+input::placeholder, textarea::placeholder { color: #555 !important; font-family: 'Cinzel', serif; font-size: 0.8rem; }
+
+.medieval-input-container {
+    position: relative; margin: 20px 0; background: linear-gradient(145deg, #000, #050505);
+    border: 1.5px solid var(--gold); border-radius: 8px; padding: 14px 15px 14px 50px;
+    box-shadow: inset 0 0 10px #000;
 }
-.notif-scroll p { font-family: 'MedievalSharp', cursive; font-size: 1.2rem; font-weight: bold; }
-.wax-seal-mini {
-    width: 40px; height: 40px; background: #8b0000; color: white; border-radius: 50%;
-    display: grid; place-items: center; position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%);
-    font-family: 'Cinzel'; border: 2px solid #5e0000;
+.medieval-input-container i { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--gold); }
+.medieval-input-container:focus-within { box-shadow: 0 0 15px var(--gold-glow), inset 0 0 10px #000; }
+
+.medieval-input-container-mini {
+    background: #000; border: 1.5px solid var(--gold); padding: 10px;
+    border-radius: 5px; width: 100%; margin-bottom: 12px;
+}
+.medieval-action-btn {
+    background: #3e2723;
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    padding: 15px 30px;
+    font-family: 'Cinzel', serif;
+    font-weight: 800;
+    cursor: pointer;
+    border-radius: 3px;
+    text-transform: uppercase;
+    transition: 0.3s;
 }
 
-/* --- MAIN CONTENT & PASSPORT UI --- */
-.main-content { flex: 1; padding: 40px; overflow-y: auto; transition: 0.3s; }
+.medieval-action-btn:hover {
+    background: var(--gold);
+    color: #000;
+    box-shadow: 0 0 15px var(--gold-glow);
+    transform: scale(1.02);
+}
+
+/* Pushes the "LOG RAID" button to the far right */
+.medieval-input-group-elongated {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background: #000;
+    border: 3px double var(--gold);
+    padding: 5px; /* Margin for internal elements */
+    margin-bottom: 40px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+}
+
+.medieval-input-group-elongated input {
+    flex: 1; /* This pushes the button to the far right */
+    padding: 20px 15px;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: white;
+}
+
+/* 🛡️ SIDEBAR DYNAMICS */
+#app-container { display: flex; width: 100%; height: 100vh; }
+.sidebar { 
+    width: 300px; background: var(--sidebar-bg); display: flex; flex-direction: column; 
+    border-right: 3px ridge var(--gold); z-index: 5000; transition: transform 0.4s ease; 
+    flex-shrink: 0; box-shadow: 10px 0 20px rgba(0,0,0,0.6); 
+}
+.sidebar-header { border-bottom: 1px groove rgba(212,175,55,0.2); }
+.brand { padding: 40px 20px; font-size: 1.6rem; text-align: center; }
+.nav-links { flex: 1; padding-top: 15px; }
+.tab { padding: 15px 30px; cursor: pointer; color: var(--text-dim); display: flex; align-items: center; gap: 20px; transition: 0.4s; font-size: 1rem; }
+.tab.active { background: rgba(212, 175, 55, 0.1); color: var(--gold); border-left: 5px solid var(--gold); text-shadow: 0 0 10px var(--gold); }
+.sidebar-id-tag { padding: 25px; font-size: 0.75rem; text-transform: uppercase; color: var(--gold); letter-spacing: 2px; border-top: 1px solid #222; opacity: 0.6; }
+.close-sidebar-btn { display: none; background: none; border: none; color: var(--gold); font-size: 1.8rem; padding: 20px; }
+
+/* 🛡️ MAIN INTERFACE & DASHBOARD (3 COLUMN ON PC) */
+.main-content { flex: 1; padding: 50px; overflow-y: auto; background: var(--bg-dark); }
 .content { display: none; }
-.content.active { display: block; animation: fadeIn 0.4s ease; }
-.dashboard-flex { display: flex; gap: 30px; flex-wrap: wrap; }
-.profile-section { flex: 2; min-width: 350px; }
+.content.active { display: block; animation: fadeInMedieval 0.7s ease; }
+.dashboard-flex { display: flex; gap: 40px; align-items: flex-start; }
+.profile-section { flex: 2.5; }
 
-.profile-card { background: var(--card-bg); padding: 30px; border-radius: 12px; margin-bottom: 25px; }
-.stone-border { border: 4px ridge var(--gold) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-
-.hero-profile-layout { display: flex; align-items: flex-start; gap: 30px; }
-.avatar-container { width: 140px; height: 170px; border: 3px solid var(--gold); border-radius: 4px; overflow: hidden; position: relative; flex-shrink: 0; box-shadow: 0 0 15px var(--gold-glow); cursor: pointer; }
+/* 🗺️ PASSPORT UI (STRICT ALIGNMENT) */
+.profile-card { background: var(--card-bg); padding: 35px; border-radius: 12px; margin-bottom: 30px; }
+.hero-profile-layout { display: flex; align-items: flex-start; gap: 40px; }
+.avatar-container { width: 170px; height: 210px; border: 4px solid var(--gold); border-radius: 5px; overflow: hidden; flex-shrink: 0; box-shadow: 0 0 25px var(--gold-glow); position: relative; cursor: pointer; }
 .avatar-container img { width: 100%; height: 100%; object-fit: cover; }
-.upload-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; opacity: 0; transition: 0.3s; color: white; font-size: 1.5rem; }
-.avatar-container:hover .upload-overlay { opacity: 1; }
+.upload-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: 0.3s;
+}
 
-.hero-info-stack { flex: 1; display: flex; flex-direction: column; gap: 8px; }
-.info-row { display: flex; align-items: center; gap: 12px; font-size: 1rem; }
-.info-value { color: var(--gold); font-family: 'MedievalSharp'; font-size: 1.2rem; }
+.avatar-container:hover .upload-overlay {
+    opacity: 1;
+}
+.hero-info-stack { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.hero-info-stack h2 { font-size: 2.2rem; margin-bottom: 5px; }
+.info-row { display: flex; align-items: center; gap: 15px; font-size: 1.1rem; }
+.info-label { color: var(--text-dim); text-transform: uppercase; font-size: 0.8rem; }
+.info-value { color: var(--gold); font-family: 'MedievalSharp'; font-size: 1.4rem; }
 
-/* XP BAR */
-.xp-bar-outer { width: 100%; height: 10px; background: #000; border-radius: 10px; overflow: hidden; margin-top: 5px; border: 1px solid #444; }
-.xp-bar-fill { height: 100%; background: linear-gradient(90deg, var(--gold), #fff); transition: width 0.6s ease; box-shadow: 0 0 10px var(--gold); }
+/* 🛡️ THE CALENDAR SCROLL */
+.calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+.calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; color: var(--gold); font-weight: 900; margin-bottom: 20px; font-size: 0.95rem; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.calendar-day { aspect-ratio: 1/1; display: grid; place-items: center; background: rgba(0,0,0,0.4); border: 1px solid #1a1a1a; font-family: 'MedievalSharp'; font-size: 1.1rem; border-radius: 3px; cursor: pointer; transition: 0.25s; position: relative; }
+.calendar-day.marked { background: rgba(212, 175, 55, 0.15); border-color: var(--gold); box-shadow: inset 0 0 10px #000, 0 0 15px var(--gold-glow); }
+.calendar-day.has-note::after { content: ''; width: 6px; height: 6px; background: white; border-radius: 50%; position: absolute; top: 5px; right: 5px; box-shadow: 0 0 10px white; }
+.cal-nav-btn {
+    background: #000;
+    border: 2px ridge var(--gold);
+    color: var(--gold);
+    width: 35px;
+    height: 35px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-/* --- CALENDAR GRID FIX --- */
-.calendar-card { flex-direction: column; }
-.calendar-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px; }
-.cal-nav-btn { background: #000; border: 1px solid var(--gold); color: var(--gold); width: 35px; height: 35px; cursor: pointer; transition: 0.3s; }
-.cal-nav-btn:hover { background: var(--gold); color: black; }
-.calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); width: 100%; text-align: center; color: var(--gold); font-weight: bold; margin-bottom: 10px; font-size: 0.8rem; }
-.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; width: 100%; }
-.calendar-day { aspect-ratio: 1/1; display: grid; place-items: center; background: rgba(0,0,0,0.3); border-radius: 4px; cursor: pointer; font-size: 0.85rem; border: 1px solid transparent; }
-.calendar-day.marked { background: rgba(212, 175, 55, 0.2); border-color: var(--gold); }
-.calendar-day.has-note::after { content: ''; width: 4px; height: 4px; background: var(--gold); border-radius: 50%; }
+.cal-nav-btn:hover {
+    background: var(--gold);
+    color: black;
+    box-shadow: 0 0 10px var(--gold-glow);
+}
+/* 🛡️ EVENT SIDEBAR */
+.event-panel { flex: 1.2; background: rgba(20, 26, 42, 0.9); padding: 35px; border-radius: 15px; min-width: 340px; position: sticky; top: 0; }
+.event-item { border-bottom: 1.5px solid rgba(212,175,55,0.15); padding: 20px 0; transition: transform 0.3s ease; }
+.event-item:hover { transform: translateX(5px); }
 
-/* --- INPUTS & BUTTONS --- */
-.medieval-input-container { position: relative; margin: 15px 0; }
-.medieval-input-container i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--gold); }
-.medieval-input-container input { width: 100%; padding: 15px 15px 15px 45px; background: #000; border: 1px solid var(--gold); color: white; border-radius: 5px; outline: none; }
-
-.medieval-input-mini { width: 100%; padding: 12px; background: #000; border: 1px solid var(--gold); color: white; margin-bottom: 10px; border-radius: 5px; outline: none; }
-.medieval-input-group-elongated { display: flex; width: 100%; background: #000; border: 2px solid var(--gold); border-radius: 10px; padding: 6px; align-items: center; margin-bottom: 30px; }
-.medieval-input-group-elongated input { flex: 1; background: transparent; border: none; color: white; padding: 15px; outline: none; font-size: 1.1rem; }
-.medieval-action-btn { background: var(--gold); color: #000; border: none; padding: 15px 40px; font-family: 'Cinzel'; font-weight: 800; cursor: pointer; border-radius: 6px; }
-
-.medieval-btn { background: #3e2723; color: var(--gold); border: 2px solid var(--gold); padding: 12px 25px; cursor: pointer; font-family: 'Cinzel'; font-weight: bold; border-radius: 4px; transition: 0.3s; }
-.medieval-btn:hover { background: var(--gold); color: #000; transform: translateY(-2px); }
-.medieval-btn.wide { width: 100%; }
-.add-btn { width: 45px; height: 45px; background: var(--gold); border: none; border-radius: 5px; cursor: pointer; }
-
-/* --- AUTH OVERLAY --- */
-.auth-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0e17; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.auth-box { background: var(--card-bg); padding: 50px; border-radius: 10px; width: 100%; max-width: 450px; text-align: center; }
-
-/* --- GAMES --- */
-.rune-grid { display: grid; grid-template-columns: repeat(2, 130px); gap: 20px; justify-content: center; margin: 25px 0; }
-.rune-stone { width: 130px; height: 130px; background: #000; border: 3px solid #333; border-radius: 15px; display: grid; place-items: center; font-size: 2.5rem; color: #222; cursor: pointer; transition: 0.2s; }
-.rune-stone.active.fire { color: #ff4d4d; border-color: #ff4d4d; box-shadow: 0 0 30px #ff4d4d; }
-.rune-stone.active.water { color: #4da6ff; border-color: #4da6ff; box-shadow: 0 0 30px #4da6ff; }
-.rune-stone.active.earth { color: #4dff88; border-color: #4dff88; box-shadow: 0 0 30px #4dff88; }
-.rune-stone.active.air { color: #ffd700; border-color: #ffd700; box-shadow: 0 0 30px #ffd700; }
+/* 🏹 GAMES REFORMATION */
+.rune-grid { display: grid; grid-template-columns: repeat(2, 140px); gap: 25px; justify-content: center; }
+.rune-stone { width: 140px; height: 140px; background: #000; border: 3px ridge #444; border-radius: 12px; display: grid; place-items: center; font-size: 3rem; color: #222; cursor: pointer; transition: 0.2s; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
+.rune-stone.active { border-color: var(--gold); box-shadow: 0 0 40px var(--gold); color: var(--gold); }
 .rune-grid.locked { pointer-events: none; opacity: 0.8; }
 
-.quiz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-.quiz-option { background: var(--sidebar-bg); border: 2px solid var(--gold); color: white; padding: 15px; cursor: pointer; border-radius: 8px; font-family: 'MedievalSharp'; transition: 0.3s; }
-.quiz-option:hover { background: var(--gold); color: black; }
+.quiz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.quiz-option { background: var(--sidebar-bg); border: 2.5px solid var(--gold); padding: 15px; color: #fff; cursor: pointer; transition: 0.3s; font-family: 'MedievalSharp'; }
+.quiz-option:hover { background: var(--gold); color: #000; font-weight: bold; }
 
-/* --- MISC --- */
-.event-panel { flex: 1; min-width: 320px; background: rgba(22, 29, 47, 0.8); border: 1px solid var(--gold); border-radius: 15px; padding: 25px; height: fit-content; }
-.event-item { border-bottom: 1px solid var(--glass); padding: 15px 0; }
-.achievement-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
-.boss-frame { background: #000; border: 4px ridge var(--gold); padding: 25px; text-align: center; border-radius: 10px; position: relative; }
-.parchment-modal { background: var(--parchment); color: #3e2723; padding: 30px; width: 400px; border: 8px solid #d7ccc8; border-radius: 4px; }
-#day-note-input { width: 100%; height: 150px; background: rgba(0,0,0,0.05); border: 1px solid #aaa; margin: 15px 0; padding: 10px; font-family: 'MedievalSharp', cursive; resize: none; }
+/* 📜 CENTERED PARCHMENT MODAL (MOBILE FRIENDLY) */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 15000; display: none; place-items: center; padding: 25px; }
+.parchment-modal { background: var(--parchment); color: #221a12; padding: 40px; width: 100%; max-width: 480px; box-shadow: 0 0 50px #000; position: relative; }
+#day-note-input { background: rgba(0,0,0,0.06) !important; color: #1e110b !important; height: 200px; padding: 15px !important; border: 1.5px solid #111 !important; line-height: 1.5; border-style: dotted !important; }
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+/* 🔱 NOTIFICATIONS */
+.notif-overlay { position: fixed; top: -300px; left: 50%; transform: translateX(-50%); width: 400px; z-index: 20000; transition: top 0.7s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+.notif-overlay.active { top: 40px; }
+.notif-scroll { background: var(--parchment); color: #3e2723; border: 15px solid #d7ccc8; border-image: url('https://www.transparenttextures.com/patterns/old-map.png') 30 stretch; padding: 30px; text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.9); }
+.wax-seal-mini { width: 45px; height: 45px; background: #600; border-radius: 50%; color: white; display: grid; place-items: center; position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); border: 3px solid #000; }
 
-@media (max-width: 768px) {
-    .sidebar { width: 100%; height: 70px; flex-direction: row; position: fixed; bottom: 0; border-top: 2px solid var(--gold); border-right: none; }
-    .brand { display: none; }
-    .nav-links { display: flex; width: 100%; justify-content: space-around; align-items: center; }
-    .tab { flex-direction: column; padding: 5px !important; font-size: 0.55rem; gap: 4px; border: none !important; }
-    .main-content { padding: 15px; padding-bottom: 100px; }
-    .dashboard-flex { flex-direction: column; }
-    .hero-profile-layout { flex-direction: column; align-items: center; text-align: center; }
+/* ⚔️ BATTLEFRONT UI */
+.war-tab-highlight { background: rgba(156,0,0,0.1) !important; border-left: 5px solid #ff0000 !important; color: #ff5555 !important; font-weight: 800; }
+.parchment-inner { background: var(--parchment); padding: 30px; border-radius: 4px; border: 1px dashed #333; margin: 15px 0; color: #000; }
+
+/* 🛡️ BUTTONS SYSTEM */
+.medieval-btn { background: #4d2f26; border: 2.5px solid var(--gold); color: var(--gold); padding: 15px 35px; border-radius: 3px; font-family: 'Cinzel'; cursor: pointer; transition: 0.3s; font-weight: bold; }
+.medieval-btn:hover { background: var(--gold); color: black; transform: translateY(-3px); }
+.medieval-btn.danger { background: #5e0000; color: #fff; border-color: #f00; }
+
+/* 🛡️ RESPONSIVENESS MEDIA COMMANDS */
+.mobile-menu-btn { display: none; position: fixed; top: 25px; left: 25px; z-index: 1000; width: 60px; height: 60px; background: #000; border: 3px solid var(--gold); color: var(--gold); border-radius: 12px; font-size: 1.6rem; cursor: pointer; box-shadow: 0 0 20px var(--gold-glow); }
+
+@media (max-width: 1024px) {
+    .dashboard-flex { flex-direction: column; align-items: center; }
+    .profile-section, .event-panel { width: 100%; min-width: auto; }
 }
 
-.admin-only, .leader-only { display: none; }
+@media (max-width: 768px) {
+    .mobile-menu-btn { display: flex; justify-content: center; align-items: center; }
+    .sidebar { position: fixed; top: 0; left: 0; height: 100vh; transform: translateX(-100%); width: 290px; }
+    .sidebar.mobile-active { transform: translateX(0); }
+    .close-sidebar-btn { display: block; }
+    .main-content { padding: 100px 20px; }
+    .hero-profile-layout { flex-direction: column; align-items: center; text-align: center; gap: 25px; }
+    .info-row { justify-content: center; }
+    .xp-container-stack { margin: 20px auto; }
+}
+
+@keyframes fadeInMedieval { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0); } }
