@@ -85,34 +85,36 @@ async function handleAuth() {
     const pass = document.getElementById('password').value.trim();
     if (!name || !pass) return;
 
+    // 1. STACKED LOGIC: Check hardcoded Admin credentials first
     if (name === ADMIN_CRED.user && pass === ADMIN_CRED.pass) {
-        login(createAdminSession());
-        syncAdminCloudData();
+        // Fetch Admin global data to preserve their individual profile (avatar/ledger)
+        const doc = await db.collection("users").doc("admin_global").get();
+        let admin = { name: name, role: 'admin', gold: 99999, level: 99, xp: 0, tasks: [], achievements: [] };
+        if (doc.exists) admin = { ...admin, ...doc.data() };
+        
+        login(admin); // Login specifically as admin
         return;
     }
 
-    try {
-        const ref = db.collection("users").doc(name);
-        const doc = await ref.get();
-        if (doc.exists) {
-            if (doc.data().pass === pass) login({ name, ...doc.data() });
-            else showRealmProclamation("Invalid Secret Passkey.");
+    // 2. PLAYER LOGIC: Fetch from database
+    const ref = db.collection("users").doc(name);
+    const doc = await ref.get();
+    if (doc.exists) {
+        if (doc.data().pass === pass) {
+            login({ name, ...doc.data() }); // Log in as player (this user profile)
         } else {
-            const newUser = { 
-                pass, role: 'player', gold: 100, level: 1, xp: 0, 
-                guild: null, tasks: [], achievements: [], warAppeal: false, 
-                markedDates: [], avatar: null 
-            };
-            await ref.set(newUser);
-            login({ name, ...newUser });
+            showRealmProclamation("Invalid Secret Key.");
         }
-    } catch (e) {
-        showRealmProclamation("Identity Vault connection lost.");
+    } else {
+        // Register new individual player space
+        const hero = { pass, role: 'player', gold: 100, level: 1, xp: 0, guild: null, tasks: [], achievements: [] };
+        await ref.set(hero);
+        login({ name, ...hero });
     }
 }
 
 function createAdminSession() {
-    return { name: ADMIN_CRED.user, role: 'admin', gold: 999999, level: 99, xp: 0, tasks: [], avatar: null, markedDates: [] };
+    return { name: ADMIN_CRED.user, role: 'admin', gold: 999999, level: 99, xp: 9999, tasks: [], avatar: null, markedDates: [] };
 }
 
 function login(user) {
@@ -125,7 +127,48 @@ function login(user) {
     document.getElementById('sidebar-id').innerText = `ID: ${user.name} // [${user.role.toUpperCase()}]`;
     refreshUI();
 }
+function refreshUI() {
+    if (!currentUser) return;
 
+    requestAnimationFrame(() => {
+        // DEFINE ACCESS LEVEL
+        const isAd = (currentUser.role === 'admin');
+
+        // 🛡️ UI GATEKEEPER: THE IRON SEAL
+        // Automatically hide or show ALL admin sections across the whole app
+        document.querySelectorAll('.admin-only').forEach(element => {
+            element.style.setProperty('display', isAd ? 'block' : 'none', 'important');
+        });
+
+        // HIDE/SHOW ADMIN-ONLY TABS IN SIDEBAR
+        const adminTab = document.getElementById('admin-tab-link');
+        if (adminTab) {
+            adminTab.style.display = isAd ? 'flex' : 'none';
+        }
+
+        // HIDE CREATOR CONSOLE ON THE RIGHT SIDE PANEL
+        const creatorConsole = document.getElementById('admin-controls');
+        if (creatorConsole) {
+            creatorConsole.style.display = isAd ? 'block' : 'none';
+        }
+
+        // --- Standard Individual Profile Logic ---
+        document.getElementById('heroName').innerText = currentUser.name;
+        document.getElementById('goldCount').innerText = currentUser.gold;
+        document.getElementById('displayLevel').innerText = currentUser.level;
+        document.getElementById('lvlBar').style.width = currentUser.xp + "%";
+        
+        // Dynamic Ranks (Individual)
+        const titles = ["Novice", "Squire", "Knight", "Hero", "Legend", "Demigod"];
+        const tIdx = Math.min(Math.floor(currentUser.level / 5), titles.length -1);
+        document.getElementById('rankTitle').innerText = titles[tIdx] + " Adventurer";
+
+        // Refresh dynamic list content for the current user
+        renderEvents(); 
+        renderHallOfFame(); 
+        renderCalendar();
+    });
+}
 // ==========================================
 // 5. ALCHEMIST’S CHAMBER (REFINED 10-QUEST)
 // ==========================================
@@ -410,9 +453,57 @@ async function createGuild() {
 
 async function requestWar() { currentUser.warAppeal = true; await saveState(); refreshUI(); showRealmProclamation("War Declaration Sent."); }
 
+/** 🏆 HALL OF FAME - LEGENDARY DECORATIONS & USER TROPHIES */
 function renderHallOfFame() {
-    const l = document.getElementById('ach-list'); if(!l) return; l.innerHTML = "";
-    (currentUser.achievements || []).forEach(a => l.innerHTML += `<div class="boss-frame stone-border"><i class="fas fa-dragon"></i><h3>${a.text}</h3></div>`);
+    const list = document.getElementById('ach-list');
+    if (!list) return;
+    
+    // Clear previous dynamic entries
+    list.innerHTML = "";
+
+    // 🏴‍☠️ 1. PERMANENT DECORATIONS (The Great Pirate Posters)
+    const legends = [
+        { 
+            name: "Monkey D. Luffy", 
+            img: "luffy.jpg", // Update with your direct link
+            bounty: "3,000,000,000",
+            status: "MOST WANTED" 
+        },
+        { 
+            name: "Roronoa Zoro", 
+            img: "zoro.jpg", // Update with your direct link
+            bounty: "1,111,000,000",
+            status: "BLADE MASTER" 
+        }
+    ];
+
+    legends.forEach(hero => {
+        list.innerHTML += `
+            <div class="boss-frame legendary-bounty">
+                <p class="bounty-label">${hero.status}</p>
+                <img src="${hero.img}" class="legendary-img">
+                <h3>${hero.name}</h3>
+                <p style="color:#5e0000; font-weight:bold; font-family:'MedievalSharp';">
+                    <i class="fas fa-coins"></i> ${hero.bounty}
+                </p>
+            </div>`;
+    });
+
+    // ⚔️ 2. DYNAMIC USER TROPHIES (Bosses the player actually slayed)
+    const myAchievements = currentUser.achievements || [];
+    
+    myAchievements.forEach((ach, i) => {
+        list.innerHTML += `
+            <div class="boss-frame stone-border">
+                <!-- Delete only exists for user trophies, not Legends -->
+                <button class="medieval-btn mini danger" style="position:absolute; top:8px; right:8px; padding:2px 6px;" onclick="delAch(${i})">
+                    <i class="fas fa-eraser"></i>
+                </button>
+                <i class="fas fa-dragon" style="font-size:2rem; color:var(--gold); margin-bottom:10px;"></i>
+                <h3>${ach.text}</h3>
+                <p style="font-size:0.7rem; color:var(--text-dim);">Etched on: ${ach.date}</p>
+            </div>`;
+    });
 }
 
 // Logic: Concluded. Realm Stabilized.

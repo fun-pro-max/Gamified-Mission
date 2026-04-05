@@ -202,6 +202,47 @@ input::placeholder, textarea::placeholder { color: #555 !important; font-family:
 .medieval-btn:hover { background: var(--gold); color: black; transform: translateY(-3px); }
 .medieval-btn.danger { background: #5e0000; color: #fff; border-color: #f00; }
 
+/* --- Legendary Bounty Posters --- */
+.legendary-bounty {
+    background: #f5e6be !important; /* Parchment Color */
+    border: 8px solid #3e2723 !important;
+    border-image: url('https://www.transparenttextures.com/patterns/old-map.png') 30 stretch;
+    padding: 10px !important;
+    color: #1e110b !important;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+    transition: transform 0.4s ease;
+}
+
+.legendary-bounty:hover {
+    transform: rotate(1deg) scale(1.05);
+}
+
+.legendary-img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border: 2px solid #3e2723;
+    margin-bottom: 10px;
+}
+
+.legendary-bounty h3 {
+    color: #3e2723 !important;
+    font-size: 1.2rem;
+    margin: 5px 0;
+}
+
+.bounty-label {
+    font-family: 'Cinzel', serif;
+    font-weight: 900;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+}
+
+/* Crucial Rule: Always keep Admin tools hidden until Logic Engine says otherwise */
+.admin-only {
+    display: none;
+}
+
 /* 🛡️ RESPONSIVENESS MEDIA COMMANDS */
 .mobile-menu-btn { display: none; position: fixed; top: 25px; left: 25px; z-index: 1000; width: 60px; height: 60px; background: #000; border: 3px solid var(--gold); color: var(--gold); border-radius: 12px; font-size: 1.6rem; cursor: pointer; box-shadow: 0 0 20px var(--gold-glow); }
 
