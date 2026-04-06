@@ -436,12 +436,54 @@ async function saveDayNote() {
 
 function changeMonth(d) { currentNavDate.setMonth(currentNavDate.getMonth() + d); renderCalendar(); }
 
+/** 🔱 MOBILE SIDEBAR LOGIC (ROBUST VERSION) */
+function toggleSidebar() {
+    const sidebar = document.getElementById('main-sidebar');
+    if (!sidebar) return;
+    
+    // Log for debugging
+    console.log("Command: Toggling Realm Gates...");
+    
+    if (sidebar.classList.contains('mobile-active')) {
+        sidebar.classList.remove('mobile-active');
+    } else {
+        sidebar.classList.add('mobile-active');
+    }
+}
+
+/** 🔱 NAVIGATION COMMANDS */
 function showContent(id, el) {
-    document.querySelectorAll('.content').forEach(c => { c.style.display='none'; c.classList.remove('active'); });
+    // 1. Clear All Map Sectors
+    document.querySelectorAll('.content').forEach(c => {
+        c.style.display = 'none';
+        c.classList.remove('active');
+    });
+    
+    // 2. Clear All Seals (Tabs)
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+
+    // 3. Reveal Selected Chamber
     const target = document.getElementById(id);
-    if(target){ target.style.display='block'; target.classList.add('active'); }
-    if(el) el.classList.add('active');
+    if(target) {
+        target.style.display = 'block';
+        target.classList.add('active');
+    }
+
+    // 4. Activate specific tab if provided
+    if (el) {
+        el.classList.add('active');
+    } else {
+        // Find tab based on ID for automated clicks
+        const matchingTab = Array.from(document.querySelectorAll('.tab'))
+            .find(t => t.innerText.toLowerCase().includes(id.substring(0,4)));
+        if (matchingTab) matchingTab.classList.add('active');
+    }
+
+    // 🛡️ 5. AUTO-CLOSE DRAWER ON SELECTION (Mobile Only)
+    if (window.innerWidth <= 768) {
+        const sidebar = document.getElementById('main-sidebar');
+        if (sidebar) sidebar.classList.remove('mobile-active');
+    }
 }
 
 async function createGuild() {
