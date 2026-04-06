@@ -1,108 +1,80 @@
 # 🛡️ QuestLog: Eternal Realm
+**A High-Fidelity, Real-Time Gamified Productivity Engine**
 
-**QuestLog** is a high-performance, real-time gamified productivity application that transforms personal discipline into a high-fantasy RPG experience. Built with a focus on **Identity Persistence**, **Centralized Economy**, and **Tactical Warfare**.
+QuestLog is not a typical "to-do list" application. It is a full-scale **Medieval Productivity RPG** built to enforce personal discipline through a centralized command economy. It transforms real-life output into digital legacy, featuring real-time synchronization, permanent identities, and tactical multiplayer warfare.
 
-![QuestLog Banner](https://img.shields.io/badge/Realm-Live-accent--green)
-![Firebase](https://img.shields.io/badge/Backend-Firebase_Firestore-orange)
-![Design](https://img.shields.io/badge/UI-Glass--Morphism-blue)
-![Mobile](https://img.shields.io/badge/Mobile-Responsive-purple)
+![Version](https://img.shields.io/badge/Realm_Status-Active-gold)
+![Design](https://img.shields.io/badge/Theme-Medieval_Raw_Adventure-darkbrown)
+![Firebase](https://img.shields.io/badge/Engine-Firebase_RealTime-orange)
+![PWA](https://img.shields.io/badge/Platform-Downloadable_App-green)
 
 ---
 
-## 🌌 The Philosophy: Identity Till Death
+## 🌌 The "Eternal" Philosophy
 
-In the Eternal Realm, your identity is not temporary. Once a Hero initializes their name and passkey, they are locked into that session. 
-*   **Permanent Sessions:** There is no logout button. Your Hero is your permanent digital twin on your device.
-*   **The Command Economy:** Unlike other gamified apps, you cannot "grind" gold by adding easy habits. Gold is a rare resource distributed only by **The Creator** (Admin) or won through sanctioned **Guild Wars**.
+In QuestLog, your progress is your survival. The realm operates on three core principles that distinguish it from standard applications:
+
+1.  **Identity Till Death:** Once a Hero initializes their session with a name and passkey, they are locked into that identity on that device. There is no logout; your Hero lives as long as the session persists.
+2.  **Command Economy:** Heroes cannot generate wealth (Gold) by grinding simple habits. Standard tasks award Experience (XP) only. Gold is a rare, sovereign resource granted solely through **The Creator’s Proclamations** or **Guild War Victories**.
+3.  **Proof of Deed:** Heroes cannot "click-to-finish" Proclamations. They must provide visual evidence (screenshots) that are sent to the High Command (Admin) for physical verification and reward granting.
 
 ---
 
 ## 🎭 The Trinity of Roles
 
-### 👑 The Creator (Admin)
-*   **Hidden Access:** Exclusive access via secret credentials.
-*   **Global Authority:** Posts "World Events" that award gold to all players.
-*   **War Arbiter:** Manages the "Approvals" hub to sanction wars, provides custom battle instructions, and declares the final victors.
+### 👑 The Creator (Admin - Gourav)
+*   **Supreme Proclamations:** Issue global events with gold bounties.
+*   **The Strike Power:** Only the Admin can permanently strike (delete) events from the global ledger.
+*   **Sanctum of Approvals:** Physically view evidence uploaded by Heroes and manually grant Gold.
+*   **War Arbiter:** Sanction Guild Wars, decide the game type (Archer/Alchemist), and declare final winners.
 
 ### 🛡️ Guild Leaders
-*   **Promotion:** Heroes who amass **500 Gold** can establish a Guild, promoting them to the rank of Leader.
-*   **Command & Control:** Leaders assign guild objectives, manage chats, and appeal to the Creator for War Sanctions.
+*   **Promotion:** Heroes of Level 10 who possess 1,000 Gold can establish a House Charter.
+*   **Dynasty Tools:** Manage House Chat, assign specific Guild objectives, and appeal to the Creator for War Sanctions.
 
 ### 🗡️ The Heroes (Players)
-*   **The Grind:** Complete Training and Quests to earn **XP only**. 
-*   **Leveling:** Experience leads to Level Ups, unlocking higher Ranks (Novice → Knight → Legend).
-*   **Legacy:** Defeating Bosses allows the player to "Frame" trophies in the **Hall of Fame**.
+*   **Personal Sovereignty:** Manage personal "Boss Raids" and "Daily Consistency" through the Passport Dashboard.
+*   **Legendary Progress:** Transition from "Novice" to "Demigod Adventurer" through active training.
+
+---
+
+## 🏛️ Interactive Skill Chambers (Mini-Games)
+
+Standard habits are replaced with interactive training modules to ensure XP is earned through actual mental and motor-skill focus:
+
+### **🧪 The Alchemist’s Chamber**
+A Randomized Knowledge engine. Upon entry, the Alchemist pulls 10 riddles from an ancient master pool of logic, history, and lore. Heroes must score 8/10 accuracy to earn the transmutation reward (25 XP).
+
+### **🏹 The Archer's Range**
+A magical Memory Sequence trial. The Four Elements (Fire, Water, Earth, Air) flash in a rhythmic pattern. Heroes must repeat the sequence with perfect focus across 3 increasingly difficult levels to earn their XP bounty.
 
 ---
 
 ## 🚀 Key Features
 
-### 📸 Passport Profile Layout
-A professional, aligned info stack featuring:
-*   **Passport Image:** A fixed-aspect ratio profile picture.
-*   **Info Stack:** Neatly aligned Name, Gold, Rank, and Level.
-*   **Visual XP Bar:** A glowing, real-time progress bar that fills as you complete tasks.
-
-### 📅 Interactive Realm Calendar
-*   A persistent habit tracker on the dashboard.
-*   Mark your progress daily to visualize your consistency across months.
-*   Data is synced to the cloud, ensuring your "Marked Dates" follow you everywhere.
-
-### ⚔️ The War Front
-*   A restricted, high-stakes tab.
-*   Invisible to the public; only accessible by the Admin and the Guild currently authorized for combat.
-*   Features custom strategy instructions issued directly by the Admin.
-
-### 🏆 Hall of Fame
-*   Boss victories aren't just text—they are trophies.
-*   Complete a Boss Raid to generate a "Framed" achievement that stays in your Hall of Fame forever (or until you choose to erase it).
-
-### 📱 Full Responsiveness
-*   **Desktop:** Professional glass-morphism sidebar.
-*   **Mobile:** Auto-adjusting **Bottom Navigation Bar** with intuitive icons, ensuring the "Realm" feels like a native app on any phone or tablet.
+*   **📸 Passport Profile:** A fixed-aspect "Identity Card" containing your portrait, Gold reserves, current Power (Level), and Title (Rank), perfectly aligned for professional visibility.
+*   **📅 Royal Ledger (Calendar):** An interactive monthly map where users can etch "Daily Scrolls" (notes) that persist across cloud sync to track real-life consistency.
+*   **🏆 Hall of Fame:** Slaying "Bosses" (major life tasks) results in permanent, framed trophies stored in the global gallery for legacy curation.
+*   **⚔️ War Front:** A restricted Battlefield tab revealed only to the Creator and authorized Combatant Guilds, where custom strategic instructions are issued by the Admin.
+*   **📲 Dynamic Drawer Logic:** On desktop, a professional Sidebar is fixed for high productivity. On mobile, the Sidebar transforms into a sliding Medieval Drawer to maximize the Content Viewport.
 
 ---
 
-## 🛠️ Technical Setup
+## 🛠️ Technical Stack
 
-### 1. Requirements
-*   A Firebase Project (Firestore Database).
-*   Standard Web Browser (Chrome recommended).
+*   **Engine:** JavaScript ES6+ (Async/Await Logic).
+*   **Vault:** Firebase Firestore (Real-time Snapshot Sync).
+*   **Structure:** HTML5 (PWA compliant with `manifest.json` and `sw.js`).
+*   **Aesthetics:** CSS3 (Advanced Flex/Grid, MedievalRidge, Cinzel, MedievalSharp).
+*   **Sync Logic:** Optimistic UI Updates ensure that the app updates the Hero's view locally while syncing to the database in the background for zero-latency response.
 
-### 2. Firebase Configuration
-Update the `firebaseConfig` object in `script.js` with your project credentials:
+---
 
-javascript
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "...",
-  appId: "..."
-};
+## ⚖️ Rules of the Realm
 
+1.  **Strict Validation:** Users cannot found Guilds below Level 10 or 1,000 Gold.
+2.  **No Ghost Accounts:** Each Hero must exist within the Cloud user registry.
+3.  **Command Authority:** Deletion of proclamations is hard-coded to Admin permissions only.
 
-------------------------------------------------------------
-
-PROJECT DISCLAIMER
-
-This project is provided for educational, experimental, and demonstration purposes.
-It may not be production-ready and is shared to showcase concepts, learning progress,
-and development practices.
-
-The author makes no guarantees regarding:
-- Security
-- Performance at scale
-- Compatibility with all environments
-- Suitability for commercial deployment
-
-Anyone choosing to use, modify, or deploy this code does so at their own risk.
-It is recommended to review, test, and adapt the code before using it in any
-critical or production environment.
-
-------------------------------------------------------------
-
-By using this software, you acknowledge that it is an open-source learning project
-and accept all responsibility for how it is used.
-
+---
+*Engraved in the digital stone of the Eternal Realm.* 🐉🗡️🔱
